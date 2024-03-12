@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+
+    <script src="https://unpkg.com/3d-force-graph"></script>
+    <!--<script src="../../dist/3d-force-graph.js"></script>-->
+</head>
+
+<body>
+    <div id="3d-graph"></div>
+
+    <script type="importmap">{ "imports": { "three": "https://unpkg.com/three/build/three.module.js" }}</script>
+
+    <script type="module">
+        import SpriteText from "//unpkg.com/three-spritetext/dist/three-spritetext.mjs";
+        import {
+            UnrealBloomPass
+        } from '//unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js';
+        import * as THREE from 'three';
+
+        const Graph = ForceGraph3D()
+            (document.getElementById('3d-graph'))
+            .backgroundColor('#000003')
+            .jsonUrl('2024_03_11_graph.json') // Choose the appropriate JSON URL for your data
+            .nodeAutoColorBy('group')
+            .nodeThreeObject(node => {
+                // Node customization with sprite text
+
+
+                const sphereGeometry = new THREE.SphereGeometry(20);
+                const sphereMaterial = new THREE.MeshBasicMaterial({
+                    color: 'light grey',
+                    transparent: true,
+                    opacity: 0.4
+                });
+                const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
+
+                // Create a new Object3D to hold the sphere mesh and sprite text
+                const container = new THREE.Object3D();
+                container.add(sphereMesh);
+
+                const sprite = new SpriteText(node.id);
+                sprite.material.depthWrite = false; // make sprite background transparent
+
+                sprite.color = 'lightgrey';
+                sprite.textHeight = 10;
+
+
+                // Set the position of the sprite text to be in front of the sphere mesh
+                sprite.position.set(0, 0, sphereGeometry.parameters.radius + 2);
+
+                // Add the sprite text to the container
+                container.add(sprite);
+
+                return container;
+            })
+            .nodeLabel('id') // Assuming you want to keep the node labels as in the second script
+            .linkThreeObjectExtend(true)
+            .linkThreeObject(link => {
+                // Extend link with text sprite showing the relationship
+                const sprite = new SpriteText(`${link.source} > ${link.target}`);
+                sprite.color = 'lightgrey';
+                sprite.textHeight = 3;
+                return sprite;
+            })
+            .linkPositionUpdate((sprite, {
+                start,
+                end
+            }) => {
+                // Positioning the sprite at the middle of the link
+                const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
+                    [c]: start[c] + (end[c] - start[c]) / 2 // calculate middle point
+                })));
+                Object.assign(sprite.position, middlePos);
+            })
+            // Adjust the force to spread nodes a little wider
+            .d3Force('charge').strength(-120);
+
+
+        const bloomPass = new UnrealBloomPass();
+        bloomPass.strength = 5;
+        bloomPass.radius = 2;
+        bloomPass.threshold = .1;
+        Graph.postProcessingComposer().addPass(bloomPass);
+    </script>
+
+
+</body>
+
+</html>
