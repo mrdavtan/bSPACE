@@ -5,6 +5,46 @@
     body {
       margin: 0;
     }
+
+
+
+
+    .floating-widget {
+      position: fixed;
+      top:500px;
+      right: 20px;
+      width: 25%;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 0px;
+      box-shadow: 0 0 1px rgba(0, 0, 0, 0.0);
+      z-index: 1000;
+    }
+
+    .search-bar {
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+
+    .search-bar input {
+      width: 95%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 0px;
+      background-color: rgba(255, 255, 255, 0.0);
+    }
+
+    .chat-window {
+      height: 600px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 0px;
+      background-color: rgba(255, 255, 255, 0.0);
+      padding: 10px;
+    }
+
+
+
   </style>
   <script src="https://unpkg.com/3d-force-graph"></script>
 
@@ -17,6 +57,24 @@
 </head>
 <body>
   <div id="3d-graph"></div>
+
+  <div class="floating-widget">
+
+    <div class="search-bar">
+      <input type="text" placeholder="Search...">
+    </div>
+
+    <div class="chat-window">
+      <!-- Chat messages will be displayed here -->
+    </div>
+
+      <!-- Chat messages will be displayed here -->
+    </div>
+  </div>
+
+
+  </div>
+
   <script type="importmap">{ "imports": { "three": "https://unpkg.com/three/build/three.module.js" }}</script>
   <script type="module">
     import SpriteText from "https://unpkg.com/three-spritetext/dist/three-spritetext.mjs";
