@@ -52,7 +52,7 @@
         sprite.textHeight = 10;
 
         // Set the position of the sprite text to be in front of the sphere mesh
-        sprite.position.set(0, 0, sphereGeometry.parameters.radius + 2);
+        sprite.position.set(0, 0, sphereGeometry.parameters.radius + 20);
 
         // Add the sprite text to the container
         container.add(sprite);
@@ -99,8 +99,13 @@
     // Add a slider to control the force strength
     gui.add(settings, 'forceStrength', -1000, 0).onChange(value => {
       Graph.d3Force('charge').strength(value);
-      Graph.numDimensions(100); // Update the graph dimensions to trigger a re-render
+      Graph.numDimensions(100);
+    // Add a slider to control the force strength
+      Graph.d3Force('charge').strength(value);
+      Graph.d3ReheatSimulation(); // Restart the force simulation
     });
+
+
 
     const bloomPass = new UnrealBloomPass();
     bloomPass.strength = 5;
