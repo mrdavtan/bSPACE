@@ -89,23 +89,30 @@
     import SpriteText from "https://unpkg.com/three-spritetext/dist/three-spritetext.mjs";
     import * as THREE from 'three';
 
-    const Graph = ForceGraph3D()
-      (document.getElementById('3d-graph'))
-      .jsonUrl('graph.json')
+
+
+
+    const initData = {
+      nodes: [{ id: 0 }],
+      links: []
+    };
+
+
+    const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
+      .graphData(initData)
+      .enableNodeDrag(false)
       .nodeLabel('id')
       .nodeAutoColorBy('group')
       .nodeThreeObject(node => {
         const sphereGeometry = new THREE.SphereGeometry(10);
-
         const sphereMaterial = new THREE.MeshBasicMaterial({
-          color: 'light grey',
+          color: 'lightgrey',
           transparent: true,
           opacity: 0.4
-        })
-
+        });
         const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
-        const sprite = new SpriteText(node.id);
+        const sprite = new SpriteText(node.id.toString());
         sprite.textHeight = 8;
         sprite.color = node.color || 'grey';
 
@@ -115,35 +122,34 @@
 
         return container;
       })
-      .linkThreeObjectExtend(true)
       .linkThreeObject(link => {
-        const sprite = new SpriteText(`${link.source} > ${link.target}`);
+        const sprite = new SpriteText(`${link.source.id} > ${link.target.id}`);
         sprite.color = 'lightgrey';
         sprite.textHeight = 3;
         return sprite;
       })
       .linkPositionUpdate((sprite, { start, end }) => {
         const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
-          [c]: start[c] + (end[c] - start[c]) / 3
+          [c]: start[c] + (end[c] - start[c]) / 2
         })));
         Object.assign(sprite.position, middlePos);
+      })
+      .onNodeClick(node => {
+        // Node click logic here
+        const nodeInfo = document.getElementById('node-info');
+        nodeInfo.innerHTML = `Node Information: <br>ID: ${node.id}<br>`;
+        nodeInfo.style.display = 'block';
       });
 
-    Graph.onNodeClick(node => {
-      const nodeInfo = document.getElementById('node-info');
-      nodeInfo.innerHTML = `
-        <strong>Node Information:</strong><br>
-        ID: ${node.id}<br>
-        Label: ${node.label}<br>
-        Color: ${node.color}<br>
-        Shape: ${node.shape}<br>
-        UUID: ${node.uuid}<br>
-        Date: ${node.date}<br>
-        Source: ${node.source}<br>
-        URL: <a href="${node.url}" target="_blank">${node.url}</a><br>
-      `;
-      nodeInfo.style.display = 'block';
-    });
+    // Periodically add new nodes and links
+    setInterval(() => {
+      const { nodes, links } = Graph.graphData();
+      const id = nodes.length;
+      Graph.graphData({
+        nodes: [...nodes, { id }],
+        links: [...links, { source: id-1, target: Math.round(Math.random() * (id-1)) }]
+      });
+    }, 1000);
 
     document.addEventListener('click', event => {
       const nodeInfo = document.getElementById('node-info');
@@ -185,6 +191,8 @@
         }
       }
     });
+
+
 
     function displayMessage(sender, message) {
       const messageElement = document.createElement('div');
