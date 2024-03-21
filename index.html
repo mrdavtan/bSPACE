@@ -1,11 +1,9 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <style>
-    body {
-      margin: 0;
-    }
-
+    body { margin: 0; }
     .floating-widget {
       position: fixed;
       top: 500px;
@@ -17,12 +15,7 @@
       box-shadow: 0 0 1px rgba(0, 0, 0, 0.0);
       z-index: 1000;
     }
-
-    .search-bar {
-      margin-bottom: 20px;
-      margin-top: 20px;
-    }
-
+    .search-bar { margin-bottom: 20px; margin-top: 20px; }
     .search-bar input {
       width: 95%;
       padding: 10px;
@@ -31,7 +24,6 @@
       background-color: rgba(255, 255, 255, 0.0);
       color: #ffffff;
     }
-
     .chat-window {
       height: 600px;
       overflow-y: auto;
@@ -40,7 +32,6 @@
       background-color: rgba(255, 255, 255, 0.0);
       padding: 10px;
     }
-
     .message {
       margin-bottom: 10px;
       padding: 5px;
@@ -48,15 +39,12 @@
       border-radius: 5px;
       color: #ffffff;
     }
-
     #node-info {
-
       position: fixed;
       top: 520px;
       right: 40px;
       width: 22%;
       padding: 0px;
-
       background-color: rgba(255, 255, 255, 0.0);
       border-radius: 5px;
       display: none;
@@ -70,12 +58,10 @@
 <body>
   <div id="3d-graph"></div>
   <div id="node-info"></div>
-
   <div class="floating-widget">
     <div class="chat-window">
       <!-- Chat messages will be displayed here -->
     </div>
-
     <div class="search-bar">
       <form id="chat-form">
         <input type="text" id="user-input" placeholder="Enter a text description...">
@@ -84,73 +70,98 @@
     </div>
   </div>
 
-  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three/build/three.module.js" }}</script>
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three/build/three.module.js" } }
+  </script>
   <script type="module">
     import SpriteText from "https://unpkg.com/three-spritetext/dist/three-spritetext.mjs";
     import * as THREE from 'three';
 
-
-
-
-    async function initGraph() {
-      const res = await fetch('graph.json');
-      const graphData = await res.json();
-
-      const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
-        .graphData(graphData)
-        .enableNodeDrag(false)
-        .nodeLabel('id')
-        .nodeAutoColorBy('group')
-        .nodeThreeObject(node => {
-          const sphereGeometry = new THREE.SphereGeometry(10);
-          const sphereMaterial = new THREE.MeshBasicMaterial({
-            color: node.color || 'lightgrey',
-            transparent: true,
-            opacity: 0.75
-          });
-          const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
-
-          const sprite = new SpriteText(node.id.toString());
-          sprite.textHeight = 8;
-          sprite.color = node.color || 'grey';
-
-          const container = new THREE.Object3D();
-          container.add(sphereMesh);
-          container.add(sprite);
-
-          return container;
-        })
-        .linkThreeObject(link => {
-          const sprite = new SpriteText(`${link.source} > ${link.target}`);
-          sprite.color = 'lightgrey';
-          sprite.textHeight = 3;
-          return sprite;
-        })
-        .linkPositionUpdate((sprite, { start, end }) => {
-          const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
-            [c]: start[c] + (end[c] - start[c]) / 2
-          })));
-          Object.assign(sprite.position, middlePos);
-        })
-        .onNodeClick(node => {
-          const nodeInfo = document.getElementById('node-info');
-          nodeInfo.innerHTML = `Node Information: <br>ID: ${node.id}<br>`;
-          nodeInfo.style.display = 'block';
+    const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
+      .jsonUrl('graph.json')
+      .nodeLabel('id')
+      .nodeAutoColorBy('group')
+      .nodeThreeObject(node => {
+        const sphereGeometry = new THREE.SphereGeometry(10);
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+          color: 'light grey',
+          transparent: true,
+          opacity: 0.4
         });
+        const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        const sprite = new SpriteText(node.id);
+        sprite.textHeight = 8;
+        sprite.color = node.color || 'grey';
+        const container = new THREE.Object3D();
+        container.add(sphereMesh);
+        container.add(sprite);
+        return container;
+      })
+      .linkThreeObjectExtend(true)
+      .linkThreeObject(link => {
+        const sprite = new SpriteText(`${link.source} > ${link.target}`);
+        sprite.color = 'lightgrey';
+        sprite.textHeight = 3;
+        return sprite;
+      })
+      .linkPositionUpdate((sprite, { start, end }) => {
+        const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
+          [c]: start[c] + (end[c] - start[c]) / 3
+        })));
+        Object.assign(sprite.position, middlePos);
+      });
 
-      // Dynamic updates after initial load
-      setInterval(() => {
-        const { nodes, links } = Graph.graphData();
-        const id = nodes.length;
-        Graph.graphData({
-          nodes: [...nodes, { id }],
-          links: [...links, { source: id-1, target: Math.round(Math.random() * (id-1)) }]
-        });
-      }, 1000);
-    }
+    Graph.onNodeClick(node => {
+      const nodeInfo = document.getElementById('node-info');
+      nodeInfo.innerHTML = `
+        <strong>Node Information:</strong><br>
+        ID: ${node.id}<br>
+        Label: ${node.label || 'N/A'}<br>
+        Color: ${node.color}<br>
+        Shape: ${node.shape || 'Sphere'}<br>
+        UUID: ${node.uuid || 'N/A'}<br>
+        Date: ${node.date || 'N/A'}<br>
+        Source: ${node.source || 'N/A'}<br>
+        URL: ${node.url ? `<a href="${node.url}" target="_blank">${node.url}</a>` : 'N/A'}<br>
+      `;
+      nodeInfo.style.display = 'block';
+    });
 
-    initGraph();
 
+    document.addEventListener('click', event => {
+      const nodeInfo = document.getElementById('node-info');
+      // Check if the click is outside the node info box by checking if the node-info element or its children are clicked
+      if (nodeInfo.style.display !== 'none' && !nodeInfo.contains(event.target)) {
+        nodeInfo.style.display = 'none';
+      }
+    });
+
+
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const chatWindow = document.querySelector('.chat-window');
+
+    chatForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const message = userInput.value.trim();
+      if (message !== '') {
+        displayMessage('user', message);
+        userInput.value = '';
+        if (message.startsWith("add node")) {
+          const nodeName = message.substring(9).trim(); // Extract node name from command
+          const newNodeId = Graph.graphData().nodes.length;
+          const newNode = {
+            id: newNodeId.toString(),
+            name: nodeName,
+            group: Math.floor(Math.random() * 10)
+          };
+          Graph.graphData().nodes.push(newNode);
+          Graph.refresh();
+          displayMessage('assistant', `Node "${nodeName}" added.`);
+        }
+        // Handle other commands or messages here
+      }
+    });
 
     function displayMessage(sender, message) {
       const messageElement = document.createElement('div');
@@ -162,3 +173,5 @@
   </script>
 </body>
 </html>
+
+
