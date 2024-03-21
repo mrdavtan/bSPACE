@@ -41,7 +41,7 @@
     }
     #node-info {
       position: fixed;
-      top: 520px;
+      top: 20px;
       right: 40px;
       width: 22%;
       padding: 0px;
@@ -170,9 +170,13 @@ function addNodeInView() {
   Graph.graphData(graphData);
 
   // Optionally, adjust the camera to ensure the new node is in view
-  // controls.target.set(newPosition.x, newPosition.y, newPosition.z);
+   controls.target.set(newPosition.x, newPosition.y, newPosition.z);
   // This line would reorient the camera's focus to the new node's position, if desired
 }
+
+
+
+
 
 
 
