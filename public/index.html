@@ -72,6 +72,7 @@
 
         <button type="submit">Send</button>
         <button id="load-graph-btn">Load Graph</button>
+
       </form>
     </div>
   </div>
@@ -85,7 +86,7 @@
 
     const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
       //.jsonUrl('graph.json')
-      .jsonUrl('graphs/chatgpt_graph_20240321_062405.json') // Add this line here
+      //.jsonUrl('graphs/chatgpt_graph_20240321_062405.json') // Add this line here
       .nodeLabel('id')
       .nodeAutoColorBy('group')
       .nodeThreeObject(node => {
@@ -196,6 +197,30 @@
       // This line would reorient the camera's focus to the new node's position, if desired
     }
 
+    async function displayGraphList() {
+      try {
+        const response = await fetch('/api/graphs');
+        if (response.ok) {
+          const data = await response.json();
+          const graphList = document.getElementById('graph-list');
+          graphList.innerHTML = '';
+          data.graphs.forEach(graph => {
+            const graphItem = document.createElement('div');
+            graphItem.textContent = graph;
+            graphItem.addEventListener('click', () => {
+              Graph.jsonUrl(`graphs/${graph}`);
+            });
+            graphList.appendChild(graphItem);
+          });
+        } else {
+          console.error('Error:', response.status);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const chatWindow = document.querySelector('.chat-window');
@@ -229,6 +254,7 @@
         }
       }
     });
+
 
     function displayMessage(sender, message) {
       const messageElement = document.createElement('div');
