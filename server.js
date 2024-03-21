@@ -21,31 +21,42 @@ app.get('/api/latest-json', async (req, res) => {
   // ... (keep the existing route handler code)
 });
 
-
-
-app.get('/api/latest-json', async (req, res) => {
-  const directoryPath = path.join(__dirname, 'path_to_your_json_files');
-
+app.get('/api/graphs', async (req, res) => {
+  const graphDirectory = path.join(__dirname, 'public', 'graphs');
   try {
-    const files = await fs.promises.readdir(directoryPath);
-    const chatgptFiles = files
-      .filter(file => file.startsWith('chatgpt_') && file.endsWith('.json'))
-      .map(filename => ({
-        filename,
-        mtime: fs.statSync(path.join(directoryPath, filename)).mtime
-      }))
-      .sort((a, b) => b.mtime - a.mtime);
-
-    if (chatgptFiles.length === 0) {
-      return res.status(404).send("No matching files found.");
-    }
-
-    // Send the most recent file
-    res.sendFile(path.join(directoryPath, chatgptFiles[0].filename));
+    const files = await fs.promises.readdir(graphDirectory);
+    const graphFiles = files.filter(file => file.endsWith('.json'));
+    res.json(graphFiles);
   } catch (err) {
-    res.status(500).send("Unable to scan directory: " + err);
+    console.error('Error:', err);
+    res.status(500).send('Internal Server Error');
   }
 });
+
+
+app.get('/api/latest-graph', async (req, res) => {
+  const graphDirectory = path.join(__dirname, 'public', 'graphs');
+  try {
+    const files = await fs.promises.readdir(graphDirectory);
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+
+    if (jsonFiles.length === 0) {
+      return res.status(404).send('No graph files found.');
+    }
+
+    const latestFile = jsonFiles.reduce((latest, current) => {
+      const latestMtime = fs.statSync(path.join(graphDirectory, latest)).mtime;
+      const currentMtime = fs.statSync(path.join(graphDirectory, current)).mtime;
+      return currentMtime > latestMtime ? current : latest;
+    });
+
+    res.json({ latestFile });
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
