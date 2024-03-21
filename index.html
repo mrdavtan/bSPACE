@@ -30,7 +30,6 @@
       border-radius: 0px;
       background-color: rgba(255, 255, 255, 0.0);
       color: #ffffff;
-
     }
 
     .chat-window {
@@ -47,16 +46,21 @@
       padding: 5px;
       background-color: rgba(255, 255, 255, 0.1);
       border-radius: 5px;
+      color: #ffffff;
     }
 
     #node-info {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.8);
+
+      position: fixed;
+      top: 520px;
+      right: 40px;
+      width: 22%;
+      padding: 0px;
+
+      background-color: rgba(255, 255, 255, 0.0);
       border-radius: 5px;
       display: none;
+      color: #ffffff;
     }
   </style>
   <script src="https://unpkg.com/3d-force-graph"></script>
@@ -66,8 +70,6 @@
 <body>
   <div id="3d-graph"></div>
   <div id="node-info"></div>
-
-
 
   <div class="floating-widget">
     <div class="chat-window">
@@ -82,12 +84,50 @@
     </div>
   </div>
 
-  <script>
+  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three/build/three.module.js" }}</script>
+  <script type="module">
+    import SpriteText from "https://unpkg.com/three-spritetext/dist/three-spritetext.mjs";
+    import * as THREE from 'three';
+
     const Graph = ForceGraph3D()
       (document.getElementById('3d-graph'))
       .jsonUrl('graph.json')
       .nodeLabel('id')
-      .nodeAutoColorBy('group');
+      .nodeAutoColorBy('group')
+      .nodeThreeObject(node => {
+        const sphereGeometry = new THREE.SphereGeometry(10);
+
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+          color: 'light grey',
+          transparent: true,
+          opacity: 0.4
+        })
+
+        const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
+        const sprite = new SpriteText(node.id);
+        sprite.textHeight = 8;
+        sprite.color = node.color || 'grey';
+
+        const container = new THREE.Object3D();
+        container.add(sphereMesh);
+        container.add(sprite);
+
+        return container;
+      })
+      .linkThreeObjectExtend(true)
+      .linkThreeObject(link => {
+        const sprite = new SpriteText(`${link.source} > ${link.target}`);
+        sprite.color = 'lightgrey';
+        sprite.textHeight = 3;
+        return sprite;
+      })
+      .linkPositionUpdate((sprite, { start, end }) => {
+        const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
+          [c]: start[c] + (end[c] - start[c]) / 3
+        })));
+        Object.assign(sprite.position, middlePos);
+      });
 
     Graph.onNodeClick(node => {
       const nodeInfo = document.getElementById('node-info');
@@ -111,7 +151,6 @@
         nodeInfo.style.display = 'none';
       }
     });
-
 
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
@@ -154,8 +193,6 @@
       chatWindow.appendChild(messageElement);
       chatWindow.scrollTop = chatWindow.scrollHeight;
     }
-
-
   </script>
 </body>
 </html>

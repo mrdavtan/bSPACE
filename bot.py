@@ -10,10 +10,12 @@ from pyvis.network import Network
 from datetime import datetime
 import uuid
 
+app = Flask(__name__)
+CORS(app)
+
 # Load environment variables
 load_dotenv()
 
-# OpenAI API key
 def query_openai(prompt):
     """
     Query the OpenAI API using a chat model and return the response.
@@ -122,25 +124,35 @@ def create_combined_network(nodes, edges, output_html='combined_network.html'):
     net.save_graph(output_html)
     print(f"Network visualization saved to {output_html}.")
 
-app = Flask(__name__)
-CORS(app)
-
-logging.basicConfig(level=logging.DEBUG)
-
-@app.route('/process', methods=['GET', 'POST'])
+@app.route('/process', methods=['POST'])
 def process_message():
-    if request.method == 'POST':
-        data = request.get_json()
-        user_prompt = data['message']
-        print(f"Received user prompt: {user_prompt}")
+    data = request.get_json()
+    user_prompt = data['message']
+    print(f"Received user prompt: {user_prompt}")
 
-        # Replace this with your actual processing logic
-        response = f"You sent: {user_prompt}"
+    base_prompt = """
+    Given a prompt, extrapolate as many relationships as possible from it and provide a list of updates.
+    If an update is a relationship, provide [ENTITY 1, RELATIONSHIP, ENTITY 2]. The relationship is directed, so the order matters.
+    If an update is related to a color, provide [ENTITY, COLOR]. Color is in hex format.
+    If an update is related to deleting an entity, provide ["DELETE", ENTITY].
 
-        print(f"Sending response: {response}")
-        return jsonify({'response': response})
-    else:
-        return "Hello, World!"
+    Example:
+    prompt: Alice is Bob's roommate. Make her node green.
+    updates:
+    [["Alice", "roommate", "Bob"], ["Alice", "#00FF00"]]
+
+    prompt: {}
+    updates:
+    """
+
+    # Process the user's prompt using your existing code
+    formatted_prompt = base_prompt.format(user_prompt)
+    response = query_openai(formatted_prompt)
+    nodes, edges, deletions = parse_response(response)
+    create_combined_network(nodes, edges)
+
+    print(f"Sending response: {response}")
+    return jsonify({'response': response})
 
 if __name__ == '__main__':
     app.run(debug=True)
