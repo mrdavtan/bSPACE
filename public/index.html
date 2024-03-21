@@ -84,7 +84,8 @@
     import * as THREE from 'three';
 
     const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
-      .jsonUrl('graph.json')
+      //.jsonUrl('graph.json')
+      .jsonUrl('graphs/chatgpt_graph_20240321_062405.json') // Add this line here
       .nodeLabel('id')
       .nodeAutoColorBy('group')
       .nodeThreeObject(node => {
@@ -133,7 +134,6 @@
       nodeInfo.style.display = 'block';
     });
 
-
     const loadGraphBtn = document.getElementById('load-graph-btn');
 
     loadGraphBtn.addEventListener('click', async () => {
@@ -151,7 +151,7 @@
       } catch (error) {
         console.error('Error:', error);
       }
-
+    }); // Added the missing closing bracket here
 
     document.addEventListener('click', event => {
       const nodeInfo = document.getElementById('node-info');
@@ -192,7 +192,7 @@
       Graph.graphData(graphData);
 
       // Optionally, adjust the camera to ensure the new node is in view
-       controls.target.set(newPosition.x, newPosition.y, newPosition.z);
+      controls.target.set(newPosition.x, newPosition.y, newPosition.z);
       // This line would reorient the camera's focus to the new node's position, if desired
     }
 

@@ -38,16 +38,16 @@ app.get('/api/latest-graph', async (req, res) => {
   const graphDirectory = path.join(__dirname, 'public', 'graphs');
   try {
     const files = await fs.promises.readdir(graphDirectory);
-    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    const chatgptFiles = files.filter(file => file.startsWith('chatgpt_graph_') && file.endsWith('.json'));
 
-    if (jsonFiles.length === 0) {
+    if (chatgptFiles.length === 0) {
       return res.status(404).send('No graph files found.');
     }
 
-    const latestFile = jsonFiles.reduce((latest, current) => {
-      const latestMtime = fs.statSync(path.join(graphDirectory, latest)).mtime;
-      const currentMtime = fs.statSync(path.join(graphDirectory, current)).mtime;
-      return currentMtime > latestMtime ? current : latest;
+    const latestFile = chatgptFiles.reduce((latest, current) => {
+      const latestTimestamp = latest.slice(14, 28); // Extract the timestamp from the filename
+      const currentTimestamp = current.slice(14, 28);
+      return currentTimestamp > latestTimestamp ? current : latest;
     });
 
     res.json({ latestFile });
@@ -56,7 +56,6 @@ app.get('/api/latest-graph', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
