@@ -137,6 +137,47 @@
     });
 
 
+
+
+function addNodeInView() {
+  const distanceInFrontOfCamera = 100; // Adjust this value to suit the scale of your graph
+
+  // Get the camera and controls object from the graph
+  const camera = Graph.camera();
+  const controls = Graph.controls();
+
+  // Calculate the direction in which the camera is looking
+  const direction = new THREE.Vector3();
+  camera.getWorldDirection(direction);
+  direction.normalize(); // Normalize the direction vector (convert to vector of length 1)
+
+  // Calculate the new position
+  const newPosition = direction.multiplyScalar(distanceInFrontOfCamera).add(camera.position);
+
+  // Create a new node at this position
+  const newNode = {
+    id: `Node${Graph.graphData().nodes.length + 1}`,
+    // Position the new node in front of the camera
+    x: newPosition.x,
+    y: newPosition.y,
+    z: newPosition.z,
+    group: Math.floor(Math.random() * 10) // Example group assignment
+  };
+
+  // Add the new node to the graph data
+  const graphData = Graph.graphData();
+  graphData.nodes.push(newNode);
+  Graph.graphData(graphData);
+
+  // Optionally, adjust the camera to ensure the new node is in view
+  // controls.target.set(newPosition.x, newPosition.y, newPosition.z);
+  // This line would reorient the camera's focus to the new node's position, if desired
+}
+
+
+
+
+
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const chatWindow = document.querySelector('.chat-window');
@@ -147,19 +188,27 @@
       if (message !== '') {
         displayMessage('user', message);
         userInput.value = '';
-        if (message.startsWith("add node")) {
-          const nodeName = message.substring(9).trim(); // Extract node name from command
-          const newNodeId = Graph.graphData().nodes.length;
-          const newNode = {
-            id: newNodeId.toString(),
-            name: nodeName,
-            group: Math.floor(Math.random() * 10)
-          };
-          Graph.graphData().nodes.push(newNode);
-          Graph.refresh();
-          displayMessage('assistant', `Node "${nodeName}" added.`);
+
+        try {
+          const response = await fetch('http://localhost:5000/process', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            displayMessage('assistant', data.response);
+          } else {
+            console.error('Error:', response.status);
+            displayMessage('assistant', 'An error occurred. Please check the server logs.');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          displayMessage('assistant', 'An error occurred. Please check the browser console.');
         }
-        // Handle other commands or messages here
       }
     });
 
@@ -173,5 +222,3 @@
   </script>
 </body>
 </html>
-
-
