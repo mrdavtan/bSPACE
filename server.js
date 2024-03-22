@@ -16,13 +16,9 @@ const __dirname = dirname(__filename);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-app.get('/api/latest-json', async (req, res) => {
-  // ... (keep the existing route handler code)
-});
-
 app.get('/api/graphs', async (req, res) => {
   const graphDirectory = path.join(__dirname, 'public', 'graphs');
+
   try {
     const files = await fs.promises.readdir(graphDirectory);
     const graphFiles = files.filter(file => file.endsWith('.json'));
@@ -33,9 +29,9 @@ app.get('/api/graphs', async (req, res) => {
   }
 });
 
-
 app.get('/api/latest-graph', async (req, res) => {
   const graphDirectory = path.join(__dirname, 'public', 'graphs');
+
   try {
     const files = await fs.promises.readdir(graphDirectory);
     const chatgptFiles = files.filter(file => file.startsWith('chatgpt_graph_') && file.endsWith('.json'));
