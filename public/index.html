@@ -4,111 +4,111 @@
   <style>
     body { margin: 0; }
 
-    .floating-widget {
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80%;
-      max-width: 800px;
-      height: 600px;
-      background-color: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 5px;
-      z-index: 1000;
-      resize: both;
-      overflow: auto;
-    }
-
-    .widget-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      cursor: move;
-    }
-
-    .widget-title {
-      color: #ffffff;
-    }
-
-    .widget-resize {
-      width: 10px;
-      height: 10px;
-      background-color: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      cursor: se-resize;
-    }
-
-    .widget-container {
-      display: flex;
-      flex-direction: column;
-      height: calc(100% - 40px);
-    }
-
-    .chat-container {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .chat-window {
-      flex-grow: 1;
-      padding: 10px;
-      overflow-y: auto;
-    }
-
-    .search-bar {
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .search-bar input {
-      width: 100%;
-      padding: 5px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-    }
-
-    .button-container {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .button-container button {
-      padding: 5px 10px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-      cursor: pointer;
-    }
-
-    .graph-list-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.8);
-      color: #ffffff;
-      overflow-y: auto;
-      display: none;
-      z-index: 1001;
-    }
 
 
+.floating-widget {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 400px;
+  height: 600px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  z-index: 1000;
+  resize: both;
+  overflow: hidden;
+}
 
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: move;
+}
 
+.widget-title {
+  color: #ffffff;
+}
+
+.widget-resize {
+  width: 10px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: se-resize;
+}
+
+.widget-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 40px);
+  overflow-y: auto;
+}
+
+.chat-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chat-window {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: calc(100% - 60px);
+}
+
+.search-bar {
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.button-container button {
+  padding: 5px 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.graph-list-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 60px);
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  overflow-y: auto;
+  display: none;
+  z-index: 1001;
+}
 
 
     #graph-list div {
@@ -167,45 +167,48 @@
       color: #ffffff;
     }
 
-  </style>
-  <script src="https://unpkg.com/3d-force-graph"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three-spritetext"></script>
-</head>
-<body>
-  <div id="3d-graph"></div>
-  <div id="node-info"></div>
 
-  <div id="floating-widget" class="floating-widget">
-    <div class="widget-header">
-      <div class="widget-title">Floating Widget</div>
-      <div class="widget-resize"></div>
-    </div>
-    <div class="widget-container">
-      <div class="chat-container">
-        <div class="chat-window">
-          <!-- Chat messages will be displayed here -->
+    </style>
+    <script src="https://unpkg.com/3d-force-graph"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three-spritetext"></script>
+    </head>
+
+    <body>
+    <div id="3d-graph"></div>
+    <div id="node-info"></div>
+
+    <div id="floating-widget" class="floating-widget">
+      <div class="widget-header">
+        <div class="widget-title">Floating Widget</div>
+        <div class="widget-resize"></div>
+      </div>
+      <div class="widget-content">
+        <div class="chat-container">
+          <div class="chat-window">
+            <!-- Chat messages will be displayed here -->
+          </div>
+          <div class="search-bar">
+            <form id="chat-form">
+              <input type="text" id="user-input" placeholder="Enter a text description...">
+            </form>
+          </div>
         </div>
-        <div class="search-bar">
-          <form id="chat-form">
-            <input type="text" id="user-input" placeholder="Enter a text description...">
-            <button type="submit">Send</button>
-          </form>
+        <div class="button-container">
+          <button id="load-graph-btn">Load Graph</button>
+          <button id="remove-graph-btn">Remove Graph</button>
+          <button id="combine-graphs-btn">Combine Graphs</button>
+          <button id="save-graph-btn">Save Graph</button>
+          <button id="graph-dir-btn">Graph Directory</button>
         </div>
       </div>
-      <div class="button-container">
-        <button id="load-graph-btn">Load Graph</button>
-        <button id="remove-graph-btn">Remove Graph</button>
-        <button id="combine-graphs-btn">Combine Graphs</button>
-        <button id="save-graph-btn">Save Graph</button>
-        <button id="graph-dir-btn">Graph Directory</button>
+      <div id="graph-list-container" class="graph-list-container">
+        <h3>Graph List</h3>
+        <div id="graph-list"></div>
       </div>
     </div>
-    <div id="graph-list-container" class="graph-list-container">
-      <h3>Graph List</h3>
-      <div id="graph-list"></div>
-    </div>
-  </div>
+
+
 
   <script type="importmap">
     { "imports": { "three": "https://unpkg.com/three/build/three.module.js" } }
@@ -214,9 +217,22 @@
     import SpriteText from "https://unpkg.com/three-spritetext/dist/three-spritetext.mjs";
     import * as THREE from 'three';
 
+    import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+    import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
+    import { UnrealBloomPass } from 'https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+
     const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
       //.jsonUrl('graph.json')
       //.jsonUrl('graphs/chatgpt_graph_20240321_062405.json') // Add this line here
+
+      .backgroundColor('#000003')
+      .onNodeClick(node => {
+        displayNodeInfo(node);
+      })
+      .showNavInfo(false)
+
       .nodeLabel('id')
       .nodeAutoColorBy('group')
       .nodeThreeObject(node => {
@@ -233,6 +249,10 @@
         const container = new THREE.Object3D();
         container.add(sphereMesh);
         container.add(sprite);
+
+        // Set the position of the sprite text to be in front of the sphere mesh
+        sprite.position.set(0, 0, sphereGeometry.parameters.radius + 20);
+
         return container;
       })
       .linkThreeObjectExtend(true)
@@ -248,6 +268,33 @@
         })));
         Object.assign(sprite.position, middlePos);
       });
+
+
+
+    let simulation;
+
+    function initializeForceSimulation(graphData) {
+      if (simulation) {
+        simulation.stop();
+      }
+
+      simulation = d3.forceSimulation()
+        .force('charge', d3.forceManyBody().strength(-500))
+        .force('link', d3.forceLink().id(d => d.id).distance(50).strength(1))
+        .force('center', d3.forceCenter());
+
+      simulation.nodes(graphData.nodes);
+      simulation.force('link').links(graphData.links);
+
+      simulation.on('tick', () => {
+        Graph.graphData({
+          nodes: graphData.nodes.map(node => ({ ...node })),
+          links: graphData.links.map(link => ({ ...link }))
+        });
+      });
+    }
+
+
 
     Graph.onNodeClick(node => {
       const nodeInfo = document.getElementById('node-info');
@@ -293,6 +340,9 @@
 
           // Load the new graph data
           Graph.graphData(graphData);
+          // Initialize the force simulation with the loaded graph data
+          initializeForceSimulation(graphData);
+
         } else if (response.status === 404) {
           console.log('No graph files found.');
         } else {
@@ -310,6 +360,13 @@
         nodeInfo.style.display = 'none';
       }
     });
+
+    function addNode(node) {
+      const graphData = Graph.graphData();
+      graphData.nodes.push(node);
+      Graph.graphData(graphData);
+      initializeForceSimulation(graphData);
+    }
 
     function addNodeInView() {
       const distanceInFrontOfCamera = 100; // Adjust this value to suit the scale of your graph
@@ -334,6 +391,7 @@
         y: newPosition.y,
         z: newPosition.z,
         group: Math.floor(Math.random() * 10) // Example group assignment
+
       };
 
       // Add the new node to the graph data
@@ -444,9 +502,17 @@
     function drop(event) {
       event.preventDefault();
       const graphName = event.dataTransfer.getData('text');
-      Graph.jsonUrl(`graphs/${graphName}`);
-    }
 
+      fetch(`graphs/${graphName}`)
+        .then(response => response.json())
+        .then(graphData => {
+          Graph.graphData(graphData);
+          initializeForceSimulation(graphData);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
 
 
     document.getElementById('load-graph-btn').addEventListener('click', () => {
@@ -498,6 +564,17 @@
         console.error('Error:', error);
       }
     });
+
+// Load graph on page load
+fetch('graphs/default-graph.json')
+  .then(response => response.json())
+  .then(graphData => {
+    Graph.graphData(graphData);
+    initializeForceSimulation(graphData);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
 
 
 
