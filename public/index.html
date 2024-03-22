@@ -3,34 +3,112 @@
 <head>
   <style>
     body { margin: 0; }
+
+
+
     .floating-widget {
       position: fixed;
-      top: 500px;
-      right: 20px;
-      width: 25%;
-      padding: 10px;
+      top: 100px;
+      left: 20px;
+      width: 80%;
+      height: 600px;
       background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 0px;
-      box-shadow: 0 0 1px rgba(0, 0, 0, 0.0);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
       z-index: 1000;
+      resize: both;
+      overflow: auto;
     }
-    .search-bar { margin-bottom: 20px; margin-top: 20px; }
-    .search-bar input {
-      width: 95%;
+
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 0px;
-      background-color: rgba(255, 255, 255, 0.0);
+      background-color: rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: move;
+    }
+
+    .widget-title {
       color: #ffffff;
     }
-    .chat-window {
-      height: 600px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      border-radius: 0px;
-      background-color: rgba(255, 255, 255, 0.0);
-      padding: 10px;
+
+    .widget-resize {
+      width: 10px;
+      height: 10px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      cursor: se-resize;
     }
+
+    .widget-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      grid-template-rows: 1fr auto;
+      gap: 10px;
+      padding: 10px;
+      height: calc(100% - 60px);
+    }
+
+    .graph-list-container {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      overflow-y: auto;
+    }
+
+    .chat-container {
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-window {
+      flex-grow: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    .search-bar {
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 5px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    .button-container {
+      grid-column: 2;
+      grid-row: 2;
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .button-container button {
+      padding: 5px 10px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+
     .message {
       margin-bottom: 10px;
       padding: 5px;
@@ -48,21 +126,6 @@
       border-radius: 5px;
       display: none;
       color: #ffffff;
-    }
-
-    .graph-list-container {
-      position: fixed;
-      top: 500px;
-      left: 20px;
-      width: 25%;
-      height: 600px;
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 0px;
-      box-shadow: 0 0 1px rgba(0, 0, 0, 0.0);
-      z-index: 1001;
-      color: #ffffff;
-      display: none;
     }
 
     .graph-list-container h3 {
@@ -100,32 +163,38 @@
 <body>
   <div id="3d-graph"></div>
   <div id="node-info"></div>
-  <div class="floating-widget">
 
+
+<div id="floating-widget" class="floating-widget">
+  <div class="widget-header">
+    <div class="widget-title">Floating Widget</div>
+    <div class="widget-resize"></div>
+  </div>
+  <div class="widget-container">
     <div class="graph-list-container">
       <h3>Graph List</h3>
       <div id="graph-list"></div>
     </div>
-
-    <div class="chat-window">
-      <!-- Chat messages will be displayed here -->
+    <div class="chat-container">
+      <div class="chat-window">
+        <!-- Chat messages will be displayed here -->
+      </div>
+      <div class="search-bar">
+        <form id="chat-form">
+          <input type="text" id="user-input" placeholder="Enter a text description...">
+          <button type="submit">Send</button>
+        </form>
+      </div>
     </div>
-
-
-    <div class="search-bar">
-      <form id="chat-form">
-        <input type="text" id="user-input" placeholder="Enter a text description...">
-        <button type="submit">Send</button>
-        <button id="load-graph-btn">Load Graph</button>
-        <button id="remove-graph-btn">Remove Graph</button>
-        <button id="combine-graphs-btn">Combine Graphs</button>
-        <button id="save-graph-btn">Save Graph</button>
-        <button id="graph-dir-btn">Graph Directory</button>
-      </form>
+    <div class="button-container">
+      <button id="load-graph-btn">Load Graph</button>
+      <button id="remove-graph-btn">Remove Graph</button>
+      <button id="combine-graphs-btn">Combine Graphs</button>
+      <button id="save-graph-btn">Save Graph</button>
+      <button id="graph-dir-btn">Graph Directory</button>
     </div>
-
-
   </div>
+</div>
 
   <script type="importmap">
     { "imports": { "three": "https://unpkg.com/three/build/three.module.js" } }
@@ -268,6 +337,42 @@
 
 /////////////////////////////////////////////////////////////////////////
 
+    const floatingWidget = document.getElementById('floating-widget');
+    const widgetHeader = document.querySelector('.widget-header');
+
+    let isDragging = false;
+    let startX, startY, startWidth, startHeight;
+
+    widgetHeader.addEventListener('mousedown', startDragging);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', stopDragging);
+    document.addEventListener('mouseleave', stopDragging);
+
+    function startDragging(e) {
+      isDragging = true;
+      startX = e.clientX - floatingWidget.offsetLeft;
+      startY = e.clientY - floatingWidget.offsetTop;
+      startWidth = floatingWidget.offsetWidth;
+      startHeight = floatingWidget.offsetHeight;
+    }
+
+    function drag(e) {
+      if (!isDragging) return;
+
+      const currentX = e.clientX - startX;
+      const currentY = e.clientY - startY;
+      const currentWidth = startWidth + (e.clientX - floatingWidget.offsetLeft - startX);
+      const currentHeight = startHeight + (e.clientY - floatingWidget.offsetTop - startY);
+
+      floatingWidget.style.left = currentX + 'px';
+      floatingWidget.style.top = currentY + 'px';
+      floatingWidget.style.width = currentWidth + 'px';
+      floatingWidget.style.height = currentHeight + 'px';
+    }
+
+    function stopDragging() {
+      isDragging = false;
+    }
 
     async function displayGraphList() {
       try {
