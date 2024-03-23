@@ -427,19 +427,6 @@
       displayGraphList();
     });
 
-    document.getElementById('voice-input-btn').addEventListener('click', async () => {
-      try {
-        const response = await fetch('/api/start-bot2', { method: 'POST' });
-        if (response.ok) {
-          await displayGraphList();
-        } else {
-          console.error('Error:', response.status);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    });
-
     const widgetHeader = document.querySelector('.widget-header');
 
     let isDragging = false;
@@ -618,13 +605,63 @@ async function loadLatestGraph() {
 
 
 
-/////////////////////////////////////////////////////////////////////////
+////////////////////VOICE RECORDING//////////////////////
+
+
+let isRecording = false;
+
+document.addEventListener('keydown', async (event) => {
+  if (event.code === 'Space' && isRecording) {
+    isRecording = false;
+    try {
+      const response = await fetch('http://localhost:5000/stop_recording', { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        displayMessage('assistant', data.response);
+        await displayGraphList();
+      } else {
+        console.error('Error:', response.status);
+        displayMessage('assistant', 'An error occurred. Please check the server logs.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+    }
+  }
+});
+
+document.getElementById('voice-input-btn').addEventListener('click', async () => {
+  if (!isRecording) {
+    isRecording = true;
+    fetch('http://localhost:5000/start_recording', { method: 'POST' });
+  } else {
+    isRecording = false;
+    try {
+      const response = await fetch('http://localhost:5000/stop_recording', { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        displayMessage('assistant', data.response);
+        await displayGraphList();
+        Graph.jsonUrl(`graphs/${data.latest_graph_file}`);  // Load the latest graph
+      } else {
+        console.error('Error:', response.status);
+        displayMessage('assistant', 'An error occurred. Please check the server logs.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+    }
+  }
+});
+
+/////////////////////////TEXT INPUT/////////////////////
+
 
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const chatWindow = document.querySelector('.chat-window');
 
-     chatForm.addEventListener('submit', async (event) => {
+    chatForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const message = userInput.value.trim();
       if (message !== '') {
@@ -639,21 +676,21 @@ async function loadLatestGraph() {
             body: JSON.stringify({ message })
           });
 
-              if (response.ok) {
-                const data = await response.json();
-                displayMessage('assistant', data.response);
-                await displayGraphList();
-              } else {
-                console.error('Error:', response.status);
-                displayMessage('assistant', 'An error occurred.Please check the server logs.');
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              displayMessage('assistant', 'An error occurred. Please check the browser console.');
+          if (response.ok) {
+            const data = await response.json();
+            displayMessage('assistant', data.response);
+            await displayGraphList();
+            Graph.jsonUrl(`graphs/${data.latest_graph_file}`);  // Load the latest graph
+          } else {
+            console.error('Error:', response.status);
+            displayMessage('assistant', 'An error occurred. Please check the server logs.');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          displayMessage('assistant', 'An error occurred. Please check the browser console.');
         }
       }
     });
-
 
     function displayMessage(sender, message) {
       const messageElement = document.createElement('div');
