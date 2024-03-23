@@ -642,7 +642,7 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
         const data = await response.json();
         displayMessage('assistant', data.response);
         await displayGraphList();
-        Graph.jsonUrl(`graphs/${data.latest_graph_file}`);  // Load the latest graph
+        loadLatestGraph();  // Load the latest graph
       } else {
         console.error('Error:', response.status);
         displayMessage('assistant', 'An error occurred. Please check the server logs.');
@@ -680,7 +680,7 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
             const data = await response.json();
             displayMessage('assistant', data.response);
             await displayGraphList();
-            Graph.jsonUrl(`graphs/${data.latest_graph_file}`);  // Load the latest graph
+            loadLatestGraph();  // Load the latest graph
           } else {
             console.error('Error:', response.status);
             displayMessage('assistant', 'An error occurred. Please check the server logs.');
