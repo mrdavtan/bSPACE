@@ -11,11 +11,12 @@
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 430px;
+  max-width: 500px;
+  min-width: 500px;
   height: 600px;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
+  border-radius: 0px;
   z-index: 1000;
   resize: both;
   overflow: hidden;
@@ -26,7 +27,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.01);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   cursor: move;
 }
@@ -59,22 +60,23 @@
 }
 
 .chat-window {
-  flex-grow: 1;
-  padding: 10px;
+  display: grid;
+  padding: 0px;
   overflow-y: auto;
   max-height: calc(100% - 60px);
 }
 
 .search-bar {
-  padding: 10px;
+  padding: 0px;
   background-color: rgba(255, 255, 255, 0.05);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .search-bar input {
   width: 100%;
+  height: 40px;
   padding: 5px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   box-sizing: border-box;
@@ -82,15 +84,20 @@
 
 .button-container {
   display: flex;
+  height: 70px;
   justify-content: space-between;
-  padding: 10px;
+  padding: 0px;
   background-color: rgba(255, 255, 255, 0.05);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 .button-container button {
-  padding: 5px 10px;
-  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  width: 100%;
+  aspect-ratio: 1/1;
+  height: 100%;
+  padding: 10px 10px;
+  background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   cursor: pointer;
@@ -98,10 +105,10 @@
 
 .graph-list-container {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 40px;
+  left: 0px;
   width: 100%;
-  height: calc(100% - 60px);
+  height: calc(87% - 60px);
   padding: 10px;
   background-color: rgba(0, 0, 0, 0.8);
   color: #ffffff;
@@ -115,7 +122,7 @@
       padding: 5px;
       margin-bottom: 5px;
       background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
+      border-radius: 0px;
       cursor: pointer;
     }
 
@@ -162,10 +169,24 @@
       width: 22%;
       padding: 0px;
       background-color: rgba(255, 255, 255, 0.0);
-      border-radius: 5px;
+      border-radius: 0px;
       display: none;
       color: #ffffff;
     }
+
+
+@font-face {
+  font-family: 'DEC Terminal Modern';
+  src: url('/fonts/decterm.ttf') format('truetype');
+/*https://www.freebestfonts.com/dec-terminal-modern-font */
+
+}
+
+
+
+body {
+  font-family: 'DEC Terminal Modern', sans-serif;
+}
 
 
     </style>
@@ -180,7 +201,7 @@
 
     <div id="floating-widget" class="floating-widget">
       <div class="widget-header">
-        <div class="widget-title">Floating Widget</div>
+        <div class="widget-title">CITIZENSPACE</div>
         <div class="widget-resize"></div>
       </div>
       <div class="widget-content">
@@ -188,12 +209,17 @@
           <div class="chat-window">
             <!-- Chat messages will be displayed here -->
           </div>
+
+
+        </div>
+
           <div class="search-bar">
             <form id="chat-form">
               <input type="text" id="user-input" placeholder="Enter a text description...">
             </form>
           </div>
-        </div>
+
+
         <div class="button-container">
           <button id="load-graph-btn">Load Graph</button>
           <button id="remove-graph-btn">Remove Graph</button>
@@ -202,9 +228,19 @@
           <button id="graph-dir-btn">Graph Directory</button>
           <button id="voice-input-btn">Voice Input</button>
         </div>
+
+        <div class="button-container">
+          <button id="find-node">Find Node</button>
+          <button id="edit-node">Edit Node</button>
+          <button id="add-node">Add Node</button>
+          <button id="link-node">Link Node</button>
+          <button id="add-property">Add Property</button>
+          <button id="rem-property">Remove Property</button>
+        </div>
+
       </div>
       <div id="graph-list-container" class="graph-list-container">
-        <h3>Graph List</h3>
+        <h5>collection</h5>
         <div id="graph-list"></div>
       </div>
     </div>
@@ -274,28 +310,28 @@
 
     let simulation;
 
-    function initializeForceSimulation(graphData) {
-      if (simulation) {
-        simulation.stop();
-      }
+function initializeForceSimulation(graphData) {
+  if (simulation) {
+    simulation.stop();
+  }
 
-      simulation = d3.forceSimulation()
-        .force('charge', d3.forceManyBody().strength(-500))
-        .force('link', d3.forceLink().id(d => d.id).distance(50).strength(1))
-        .force('center', d3.forceCenter());
+  simulation = d3.forceSimulation()
+    .force('charge', d3.forceManyBody().strength(-200)) // Decreased repulsion strength
+    .force('link', d3.forceLink().id(d => d.id).distance(100).strength(1)) // Increased link distance and strength
+    .force('center', d3.forceCenter())
+    .alphaDecay(0.05) // Increased alphaDecay for faster convergence
+    .velocityDecay(0.8); // Decreased velocityDecay to maintain node velocities
 
-      simulation.nodes(graphData.nodes);
-      simulation.force('link').links(graphData.links);
+  simulation.nodes(graphData.nodes);
+  simulation.force('link').links(graphData.links);
 
-      simulation.on('tick', () => {
-        Graph.graphData({
-          nodes: graphData.nodes.map(node => ({ ...node })),
-          links: graphData.links.map(link => ({ ...link }))
-        });
-      });
-    }
-
-
+  simulation.on('tick', () => {
+    Graph.graphData({
+      nodes: graphData.nodes.map(node => ({ ...node })),
+      links: graphData.links.map(link => ({ ...link }))
+    });
+  });
+}
 
     Graph.onNodeClick(node => {
       const nodeInfo = document.getElementById('node-info');
