@@ -29,7 +29,6 @@ app.get('/api/graphs', async (req, res) => {
   }
 });
 
-
 app.post('/api/start-bot2', (req, res) => {
   const bot2Process = spawn('python', ['bot2.py']);
   bot2Process.on('close', (code) => {
