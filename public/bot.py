@@ -29,6 +29,64 @@ recording_thread = None
 is_recording = False
 audio_response = None
 
+base_prompt = """
+        Given a transcript, your task is to extrapolate as many relationships and relevant details as possible, organizing them into a list of updates that will be directly parsed by a Python function to create a graph. It's crucial that the updates adhere strictly to the structured formats outlined below, without any additional comments or explanations, to ensure accurate parsing and graph representation.
+
+        Update Formats:
+
+            Relationships between entities: Use the format [ENTITY 1, RELATIONSHIP, ENTITY 2] to indicate a directed relationship, where ENTITY 1 and ENTITY 2 are specific named entities, and RELATIONSHIP describes their connection (e.g., "roommate", "owns", "located in").
+
+            Color updates for entities: If representing an entity with a color, specify this using [ENTITY, COLOR], where COLOR is in hex format.
+
+            Deleting an entity: To indicate the removal of an entity, use ["DELETE", ENTITY].
+
+        Entity Types and Categories:
+
+            Person: Names of individuals (e.g., "Alice", "Dr. John Smith").
+            Location: Geographical locations (e.g., "Paris", "Mount Everest").
+            Organization: Companies, institutions, governmental entities (e.g., "United Nations", "Google").
+            Date/Time: Dates, times, durations (e.g., "January 1, 2020", "next week").
+            Numerical: Numbers, monetary figures, percentages (e.g., "100 dollars", "35%").
+            Event: Specific events, historical and current (e.g., "World War II", "Olympic Games").
+            Product: Products, technology, vehicles (e.g., "iPhone", "Toyota Camry").
+            Work of Art: Books, songs, movies (e.g., "The Great Gatsby", "Bohemian Rhapsody").
+
+        Classification Categories:
+
+            General Named Entities: People, Locations, Organizations, and Miscellaneous.
+            Temporal Entities: Date/Time and Durations.
+            Quantitative Entities: Numerical values, Quantities, Monetary values, Percentages.
+            Domain-Specific Entities: Tailored to fields like Medical, Legal, Technical.
+
+        Examples:
+
+        Transcript: "Alice is Bob's roommate. Make her node green."
+        Updates: [["Alice", "roommate", "Bob"], ["Alice", "#00FF00"]]
+
+        Transcript: "The conference in Paris was attended by Dr. Emily and Prof. John from MIT. Remove 'conference'."
+        Updates: [["Dr. Emily", "attended", "conference"], ["Prof. John", "attended", "conference"], ["conference", "located in", "Paris"], ["DELETE", "conference"]]
+
+    Instructions for Processing:
+
+        Ensure the updates are presented exactly as per the formats specified, ready for direct parsing and graph creation. The response must strictly follow the format with no additional comments or explanations, to facilitate accurate and efficient parsing by the Python function.
+
+    Please process the following transcript and structure the updates accordingly:
+    Transcript: {}
+    Updates:
+        """
+
+
+
+
+
+
+
+
+
+
+
+
+
 def transcribe_audio(audio_file):
     api_key = os.getenv("OPENAI_API_KEY")
     url = "https://api.openai.com/v1/audio/transcriptions"
@@ -97,51 +155,6 @@ def process_audio():
         print("Transcription:")
         print(transcription)
 
-        base_prompt = """
-        Given a transcript, your task is to extrapolate as many relationships and relevant details as possible, organizing them into a list of updates that will be directly parsed by a Python function to create a graph. It's crucial that the updates adhere strictly to the structured formats outlined below, without any additional comments or explanations, to ensure accurate parsing and graph representation.
-
-        Update Formats:
-
-            Relationships between entities: Use the format [ENTITY 1, RELATIONSHIP, ENTITY 2] to indicate a directed relationship, where ENTITY 1 and ENTITY 2 are specific named entities, and RELATIONSHIP describes their connection (e.g., "roommate", "owns", "located in").
-
-            Color updates for entities: If representing an entity with a color, specify this using [ENTITY, COLOR], where COLOR is in hex format.
-
-            Deleting an entity: To indicate the removal of an entity, use ["DELETE", ENTITY].
-
-        Entity Types and Categories:
-
-            Person: Names of individuals (e.g., "Alice", "Dr. John Smith").
-            Location: Geographical locations (e.g., "Paris", "Mount Everest").
-            Organization: Companies, institutions, governmental entities (e.g., "United Nations", "Google").
-            Date/Time: Dates, times, durations (e.g., "January 1, 2020", "next week").
-            Numerical: Numbers, monetary figures, percentages (e.g., "100 dollars", "35%").
-            Event: Specific events, historical and current (e.g., "World War II", "Olympic Games").
-            Product: Products, technology, vehicles (e.g., "iPhone", "Toyota Camry").
-            Work of Art: Books, songs, movies (e.g., "The Great Gatsby", "Bohemian Rhapsody").
-
-        Classification Categories:
-
-            General Named Entities: People, Locations, Organizations, and Miscellaneous.
-            Temporal Entities: Date/Time and Durations.
-            Quantitative Entities: Numerical values, Quantities, Monetary values, Percentages.
-            Domain-Specific Entities: Tailored to fields like Medical, Legal, Technical.
-
-        Examples:
-
-        Transcript: "Alice is Bob's roommate. Make her node green."
-        Updates: [["Alice", "roommate", "Bob"], ["Alice", "#00FF00"]]
-
-        Transcript: "The conference in Paris was attended by Dr. Emily and Prof. John from MIT. Remove 'conference'."
-        Updates: [["Dr. Emily", "attended", "conference"], ["Prof. John", "attended", "conference"], ["conference", "located in", "Paris"], ["DELETE", "conference"]]
-
-    Instructions for Processing:
-
-        Ensure the updates are presented exactly as per the formats specified, ready for direct parsing and graph creation. The response must strictly follow the format with no additional comments or explanations, to facilitate accurate and efficient parsing by the Python function.
-
-    Please process the following transcript and structure the updates accordingly:
-    Transcript: {}
-    Updates:
-        """
 
         formatted_prompt = base_prompt.format(transcription)
         response = query_openai(formatted_prompt)
@@ -328,20 +341,6 @@ def process_message():
     user_prompt = data['message']
     print(f"Received user prompt: {user_prompt}")
 
-    base_prompt = """
-    Given a prompt, extrapolate as many relationships as possible from it and provide a list of updates.
-    If an update is a relationship, provide [ENTITY 1, RELATIONSHIP, ENTITY 2]. The relationship is directed, so the order matters.
-    If an update is related to a color, provide [ENTITY, COLOR]. Color is in hex format.
-    If an update is related to deleting an entity, provide ["DELETE", ENTITY].
-
-    Example:
-    prompt: Alice is Bob's roommate. Make her node green.
-    updates:
-    [["Alice", "roommate", "Bob"], ["Alice", "#00FF00"]]
-
-    prompt: {}
-    updates:
-    """
 
     # Process the user's prompt using your existing code
     formatted_prompt = base_prompt.format(user_prompt)
