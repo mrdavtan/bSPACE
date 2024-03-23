@@ -11,7 +11,7 @@
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 400px;
+  max-width: 430px;
   height: 600px;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -200,6 +200,7 @@
           <button id="combine-graphs-btn">Combine Graphs</button>
           <button id="save-graph-btn">Save Graph</button>
           <button id="graph-dir-btn">Graph Directory</button>
+          <button id="voice-input-btn">Voice Input</button>
         </div>
       </div>
       <div id="graph-list-container" class="graph-list-container">
@@ -404,6 +405,14 @@
       // This line would reorient the camera's focus to the new node's position, if desired
     }
 
+    document.addEventListener('click', (event) => {
+  if (!floatingWidget.contains(event.target)) {
+    graphListContainer.style.display = 'none';
+  }
+});
+
+
+
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -412,13 +421,22 @@
     const graphListContainer = document.getElementById('graph-list-container');
     const floatingWidget = document.getElementById('floating-widget');
 
+
     graphDirBtn.addEventListener('click', () => {
       graphListContainer.style.display = 'block';
+      displayGraphList();
     });
 
-    document.addEventListener('click', (event) => {
-      if (!floatingWidget.contains(event.target)) {
-        graphListContainer.style.display = 'none';
+    document.getElementById('voice-input-btn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/start-bot2', { method: 'POST' });
+        if (response.ok) {
+          await displayGraphList();
+        } else {
+          console.error('Error:', response.status);
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
     });
 
@@ -458,33 +476,36 @@
       isDragging = false;
     }
 
-    async function displayGraphList() {
-      try {
-        const response = await fetch('/api/graphs');
-        if (response.ok) {
-          const data = await response.json();
-          const graphList = document.getElementById('graph-list');
-          graphList.innerHTML = '';
-          data.forEach(graph => {
-            const graphItem = document.createElement('div');
-            graphItem.textContent = graph;
-            graphItem.addEventListener('click', () => {
-              const selectedItem = graphList.querySelector('.selected');
-              if (selectedItem) {
-                selectedItem.classList.remove('selected');
-              }
-              graphItem.classList.add('selected');
-              Graph.jsonUrl(`graphs/${graph}`);
-            });
-            graphList.appendChild(graphItem);
-          });
-        } else {
-          console.error('Error:', response.status);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
+async function displayGraphList() {
+  try {
+    const response = await fetch('/api/graphs');
+    if (response.ok) {
+      const data = await response.json();
+      const graphList = document.getElementById('graph-list');
+      graphList.innerHTML = '';
+
+      data.forEach(graph => {
+        const graphItem = document.createElement('div');
+        graphItem.textContent = graph;
+        graphItem.addEventListener('click', () => {
+          const selectedItem = graphList.querySelector('.selected');
+          if (selectedItem) {
+            selectedItem.classList.remove('selected');
+          }
+          graphItem.classList.add('selected');
+          Graph.jsonUrl(`graphs/${graph}`);
+        });
+        graphList.appendChild(graphItem);
+      });
+
+      return data[0];
+    } else {
+      console.error('Error:', response.status);
     }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
 
 
     const graphContainer = document.getElementById('3d-graph');
@@ -524,6 +545,8 @@
     document.getElementById('remove-graph-btn').addEventListener('click', () => {
       Graph.graphData({nodes: [], links: []});
     });
+
+
 
     // Combining Graphs
     document.getElementById('combine-graphs-btn').addEventListener('click', async () => {
@@ -576,6 +599,23 @@ fetch('graphs/default-graph.json')
     console.error('Error:', error);
   });
 
+async function loadLatestGraph() {
+  try {
+    const response = await fetch('/api/latest-graph');
+    if (response.ok) {
+      const data = await response.json();
+      const latestFile = data.latestFile;
+      const graphData = await fetch(`graphs/${latestFile}`).then(res => res.json());
+      Graph.graphData(graphData);
+      initializeForceSimulation(graphData);
+    } else if (response.status !== 404) {
+      console.error('Error:', response.status);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////
@@ -584,13 +624,12 @@ fetch('graphs/default-graph.json')
     const userInput = document.getElementById('user-input');
     const chatWindow = document.querySelector('.chat-window');
 
-    chatForm.addEventListener('submit', async (event) => {
+     chatForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const message = userInput.value.trim();
       if (message !== '') {
         displayMessage('user', message);
         userInput.value = '';
-
         try {
           const response = await fetch('http://localhost:5000/process', {
             method: 'POST',
@@ -600,19 +639,21 @@ fetch('graphs/default-graph.json')
             body: JSON.stringify({ message })
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            displayMessage('assistant', data.response);
-          } else {
-            console.error('Error:', response.status);
-            displayMessage('assistant', 'An error occurred. Please check the server logs.');
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          displayMessage('assistant', 'An error occurred. Please check the browser console.');
+              if (response.ok) {
+                const data = await response.json();
+                displayMessage('assistant', data.response);
+                await displayGraphList();
+              } else {
+                console.error('Error:', response.status);
+                displayMessage('assistant', 'An error occurred.Please check the server logs.');
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              displayMessage('assistant', 'An error occurred. Please check the browser console.');
         }
       }
     });
+
 
     function displayMessage(sender, message) {
       const messageElement = document.createElement('div');
