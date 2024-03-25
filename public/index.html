@@ -357,46 +357,27 @@ function initializeForceSimulation(graphData) {
       nodeInfo.style.display = 'block';
     });
 
-    const loadGraphBtn = document.getElementById('load-graph-btn');
 
-    loadGraphBtn.addEventListener('click', async () => {
-      try {
-        const response = await fetch('/api/latest-graph');
-        if (response.ok) {
-          const data = await response.json();
-          const latestFile = data.latestFile;
+const loadGraphBtn = document.getElementById('load-graph-btn');
 
-          // Get the current camera position
-          const camera = Graph.camera();
-          const cameraPosition = camera.position;
-
-          // Load the graph data from the file
-          const graphData = await fetch(`graphs/${latestFile}`).then(res => res.json());
-
-          // Position the new graph relative to the camera
-          graphData.nodes.forEach(node => {
-            node.x += cameraPosition.x;
-            node.y += cameraPosition.y;
-            node.z += cameraPosition.z;
-          });
-
-          // Clear the existing graph data
-          Graph.graphData({nodes: [], links: []});
-
-          // Load the new graph data
-          Graph.graphData(graphData);
-          // Initialize the force simulation with the loaded graph data
-          initializeForceSimulation(graphData);
-
-        } else if (response.status === 404) {
-          console.log('No graph files found.');
-        } else {
-          console.error('Error:', response.status);
-        }
-      } catch (error) {
-        console.error('Error:', error);
+loadGraphBtn.addEventListener('click', async () => {
+  try {
+    const response = await fetch('/api/graphs');
+    if (response.ok) {
+      const graphFiles = await response.json();
+      if (graphFiles.length > 0) {
+        const latestFile = graphFiles[0]; // Get the latest file (assuming the list is sorted in descending order)
+        Graph.jsonUrl(`graphs/${latestFile}`);
+      } else {
+        console.log('No graph files found.');
       }
-    });
+    } else {
+      console.error('Error:', response.status);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+});
 
     document.addEventListener('click', event => {
       const nodeInfo = document.getElementById('node-info');
@@ -674,6 +655,7 @@ document.addEventListener('keydown', async (event) => {
   }
 });
 
+
 document.getElementById('voice-input-btn').addEventListener('click', async () => {
   if (!isRecording) {
     isRecording = true;
@@ -686,7 +668,16 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
         const data = await response.json();
         displayMessage('assistant', data.response);
         await displayGraphList();
-        loadLatestGraph();  // Load the latest graph
+
+        // Load the latest graph
+        const graphResponse = await fetch('/api/graphs');
+        if (graphResponse.ok) {
+          const graphFiles = await graphResponse.json();
+          if (graphFiles.length > 0) {
+            const latestFile = graphFiles[0];
+            Graph.jsonUrl(`graphs/${latestFile}`);
+          }
+        }
       } else {
         console.error('Error:', response.status);
         displayMessage('assistant', 'An error occurred. Please check the server logs.');
@@ -698,6 +689,7 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
   }
 });
 
+
 /////////////////////////TEXT INPUT/////////////////////
 
 
@@ -705,36 +697,47 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
     const userInput = document.getElementById('user-input');
     const chatWindow = document.querySelector('.chat-window');
 
-    chatForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const message = userInput.value.trim();
-      if (message !== '') {
-        displayMessage('user', message);
-        userInput.value = '';
-        try {
-          const response = await fetch('http://localhost:5000/process', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message })
-          });
 
-          if (response.ok) {
-            const data = await response.json();
-            displayMessage('assistant', data.response);
-            await displayGraphList();
-            loadLatestGraph();  // Load the latest graph
-          } else {
-            console.error('Error:', response.status);
-            displayMessage('assistant', 'An error occurred. Please check the server logs.');
+chatForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const message = userInput.value.trim();
+  if (message !== '') {
+    displayMessage('user', message);
+    userInput.value = '';
+    try {
+      const response = await fetch('http://localhost:5000/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        displayMessage('assistant', data.response);
+        await displayGraphList();
+
+        // Load the latest graph
+        const graphResponse = await fetch('/api/graphs');
+        if (graphResponse.ok) {
+          const graphFiles = await graphResponse.json();
+          if (graphFiles.length > 0) {
+            const latestFile = graphFiles[0];
+            Graph.jsonUrl(`graphs/${latestFile}`);
           }
-        } catch (error) {
-          console.error('Error:', error);
-          displayMessage('assistant', 'An error occurred. Please check the browser console.');
         }
+      } else {
+        console.error('Error:', response.status);
+        displayMessage('assistant', 'An error occurred. Please check the server logs.');
       }
-    });
+    } catch (error) {
+      console.error('Error:', error);
+      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+    }
+  }
+});
+
 
     function displayMessage(sender, message) {
       const messageElement = document.createElement('div');
