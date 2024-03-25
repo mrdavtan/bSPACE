@@ -659,27 +659,28 @@ document.addEventListener('keydown', async (event) => {
 document.getElementById('voice-input-btn').addEventListener('click', async () => {
   if (!isRecording) {
     isRecording = true;
-    fetch('http://localhost:5000/start_recording', { method: 'POST' });
+    try {
+      const startResponse = await fetch('http://localhost:5000/start_recording', { method: 'POST' });
+      if (startResponse.ok) {
+        const startData = await startResponse.json();
+        displayMessage('log', 'Recording started.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+    }
   } else {
     isRecording = false;
     try {
-      const response = await fetch('http://localhost:5000/stop_recording', { method: 'POST' });
-      if (response.ok) {
-        const data = await response.json();
-        displayMessage('assistant', data.response);
+      const stopResponse = await fetch('http://localhost:5000/stop_recording', { method: 'POST' });
+      if (stopResponse.ok) {
+        const stopData = await stopResponse.json();
+        displayMessage('log', stopData.log);
+        displayMessage('assistant', stopData.response);
         await displayGraphList();
-
-        // Load the latest graph
-        const graphResponse = await fetch('/api/graphs');
-        if (graphResponse.ok) {
-          const graphFiles = await graphResponse.json();
-          if (graphFiles.length > 0) {
-            const latestFile = graphFiles[0];
-            Graph.jsonUrl(`graphs/${latestFile}`);
-          }
-        }
+        loadLatestGraph();
       } else {
-        console.error('Error:', response.status);
+        console.error('Error:', stopResponse.status);
         displayMessage('assistant', 'An error occurred. Please check the server logs.');
       }
     } catch (error) {
@@ -688,6 +689,7 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
     }
   }
 });
+
 
 
 /////////////////////////TEXT INPUT/////////////////////

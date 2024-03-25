@@ -10,6 +10,7 @@ from pyvis.network import Network
 from datetime import datetime
 import uuid
 
+import sys
 import io
 import sounddevice as sd
 import tempfile
@@ -28,6 +29,16 @@ load_dotenv()
 recording_thread = None
 is_recording = False
 audio_response = None
+
+
+log_buffer = io.StringIO()
+
+# Replace sys.stdout and sys.stderr with the log_buffer
+original_stdout = sys.stdout
+original_stderr = sys.stderr
+sys.stdout = log_buffer
+sys.stderr = log_buffer
+
 
 base_prompt = """
         Given a transcript, your task is to extrapolate as many relationships and relevant details as possible, organizing them into a list of updates that will be directly parsed by a Python function to create a graph. It's crucial that the updates adhere strictly to the structured formats outlined below, without any additional comments or explanations, to ensure accurate parsing and graph representation.
@@ -127,12 +138,15 @@ def process_audio():
             audio_data.append(indata.copy())
 
         # Start the audio recording
-        print("Recording started. Speak now...")
+        print("Recording started")
+
+
+
         with sd.InputStream(samplerate=sample_rate, channels=channels, callback=callback):
             while is_recording:
                 pass
 
-        print("Recording finished.")
+        #print("Recording finished.")
 
         # Convert the audio data to a NumPy array
         audio_array = np.concatenate(audio_data, axis=0)
@@ -169,18 +183,26 @@ def process_audio():
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording():
-    global recording_thread, is_recording
+    global recording_thread, is_recording, log_buffer
     is_recording = True
+    # Clear the log buffer before starting a new recording
+    log_buffer.truncate(0)
+    log_buffer.seek(0)
     recording_thread = threading.Thread(target=process_audio)
     recording_thread.start()
     return jsonify({'status': 'recording_started'})
 
 @app.route('/stop_recording', methods=['POST'])
 def stop_recording():
-    global is_recording
+    global is_recording, log_buffer
     is_recording = False
     response = process_audio_result()
-    return jsonify({'response': response})
+    # Get the log output from the buffer
+    log_output = log_buffer.getvalue()
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
+    return jsonify({'response': response, 'log': log_output})
+
 
 def process_audio_result():
     global recording_thread, audio_response
@@ -248,6 +270,18 @@ def parse_response(response):
 
 def create_combined_network(nodes, edges, output_html='combined_network.html'):
     try:
+        if not nodes:
+            print("No nodes to be added. Skipping file generation.")
+
+            log_output = log_buffer.getvalue()
+            # Restore the original stdout and stderr
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+
+            return None
+
+
+
         net = Network(directed=True, width="3000px", height="2000px", bgcolor="#333333")
         added_node_ids = set()  # Track added nodes
         options = {
@@ -350,6 +384,7 @@ def process_message():
 
     print(f"Sending response: {response}")
     return jsonify({'response': response})
+
 
 
 if __name__ == '__main__':
