@@ -11,8 +11,8 @@
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 500px;
-  min-width: 500px;
+  max-width: 503px;
+  min-width: 503px;
   height: 600px;
   background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -231,7 +231,7 @@ body {
         <div class="button-container">
           <button id="load-graph-btn">Load Graph</button>
           <button id="remove-graph-btn">Remove Graph</button>
-          <button id="combine-graphs-btn">Combine Graphs</button>
+          <button id="scene-list">Scene List</button>
           <button id="save-graph-btn">Save Graph</button>
           <button id="graph-dir-btn">Graph Directory</button>
           <button id="voice-input-btn">Voice Input</button>
@@ -358,6 +358,93 @@ function initializeForceSimulation(graphData) {
     });
 
 
+
+
+
+///////////////////////////// LOADING GRAPHS   ////////////////////////////////
+
+
+// Global variable to store loaded graphs
+let loadedGraphs = [];
+
+// Function to load a graph
+async function loadGraph(graphFileName) {
+  return new Promise((resolve, reject) => {
+    Graph.jsonUrl(`graphs/${graphFileName}`, resolve, reject);
+  });
+}
+
+
+// Function to add a graph to the loaded graphs list and update the scene view
+async function addGraphToList(graphFileName) {
+  const graphData = await loadGraph(graphFileName);
+  loadedGraphs.push(graphData);
+  updateSceneView();
+  updateGraphVisualization(graphData, 'add');
+}
+
+// Function to remove a graph from the loaded graphs list and update the scene view
+function removeGraphFromList(graphIndex) {
+  const graphData = loadedGraphs[graphIndex];
+  loadedGraphs.splice(graphIndex, 1);
+  updateSceneView();
+  updateGraphVisualization(graphData, 'remove');
+}
+
+// Function to update the graph visualization dynamically
+function updateGraphVisualization(graphData, operation) {
+  const currentGraphData = Graph.graphData();
+
+  if (operation === 'add') {
+    // Add nodes and links to the existing graph data
+    currentGraphData.nodes = currentGraphData.nodes.concat(graphData.nodes);
+    currentGraphData.links = currentGraphData.links.concat(graphData.links);
+  } else if (operation === 'remove') {
+    // Remove nodes and links from the existing graph data
+    currentGraphData.nodes = currentGraphData.nodes.filter(node => !graphData.nodes.includes(node));
+    currentGraphData.links = currentGraphData.links.filter(link => !graphData.links.includes(link));
+  }
+
+  Graph.graphData(currentGraphData);
+  Graph.simulation.restart();
+}
+
+// Update the displayGraphList function to load the selected graph
+async function displayGraphList() {
+  try {
+    const response = await fetch('/api/graphs');
+    if (response.ok) {
+      const data = await response.json();
+      const graphList = document.getElementById('graph-list');
+      graphList.innerHTML = '';
+      data.forEach(graph => {
+        const graphItem = document.createElement('div');
+        graphItem.textContent = graph;
+        graphItem.addEventListener('click', async () => {
+          graphItem.classList.add('selected');
+          const graphData = await loadGraph(graph);
+          if (graphData) {
+            addGraphToList(graphData);
+            updateGraphVisualization();
+          }
+        });
+        graphList.appendChild(graphItem);
+      });
+      return data[0];
+    } else {
+      console.error('Error:', response.status);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+
+//////////////////////////////////////////////////////////////////
+
+
+
+
 const loadGraphBtn = document.getElementById('load-graph-btn');
 
 loadGraphBtn.addEventListener('click', async () => {
@@ -438,10 +525,6 @@ loadGraphBtn.addEventListener('click', async () => {
 
 
 
-/////////////////////////////////////////////////////////////////////////
-
-
-
     const graphDirBtn = document.getElementById('graph-dir-btn');
     const graphListContainer = document.getElementById('graph-list-container');
     const floatingWidget = document.getElementById('floating-widget');
@@ -488,36 +571,7 @@ loadGraphBtn.addEventListener('click', async () => {
       isDragging = false;
     }
 
-async function displayGraphList() {
-  try {
-    const response = await fetch('/api/graphs');
-    if (response.ok) {
-      const data = await response.json();
-      const graphList = document.getElementById('graph-list');
-      graphList.innerHTML = '';
 
-      data.forEach(graph => {
-        const graphItem = document.createElement('div');
-        graphItem.textContent = graph;
-        graphItem.addEventListener('click', () => {
-          const selectedItem = graphList.querySelector('.selected');
-          if (selectedItem) {
-            selectedItem.classList.remove('selected');
-          }
-          graphItem.classList.add('selected');
-          Graph.jsonUrl(`graphs/${graph}`);
-        });
-        graphList.appendChild(graphItem);
-      });
-
-      return data[0];
-    } else {
-      console.error('Error:', response.status);
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
 
 
     const graphContainer = document.getElementById('3d-graph');
@@ -561,7 +615,7 @@ async function displayGraphList() {
 
 
     // Combining Graphs
-    document.getElementById('combine-graphs-btn').addEventListener('click', async () => {
+    document.getElementById('scene-list').addEventListener('click', async () => {
       const selectedGraphs = Array.from(document.querySelectorAll('#graph-select option:checked')).map(option => option.value);
       try {
         const combinedGraph = {nodes: [], links: []};
@@ -678,7 +732,16 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
         displayMessage('log', stopData.log);
         displayMessage('assistant', stopData.response);
         await displayGraphList();
-        loadLatestGraph();
+
+        // Load the latest graph
+        const graphResponse = await fetch('/api/graphs');
+        if (graphResponse.ok) {
+          const graphFiles = await graphResponse.json();
+          if (graphFiles.length > 0) {
+            const latestFile = graphFiles[0];
+            Graph.jsonUrl(`graphs/${latestFile}`);
+          }
+        }
       } else {
         console.error('Error:', stopResponse.status);
         displayMessage('assistant', 'An error occurred. Please check the server logs.');
@@ -689,8 +752,6 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
     }
   }
 });
-
-
 
 /////////////////////////TEXT INPUT/////////////////////
 
