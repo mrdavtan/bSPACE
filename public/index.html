@@ -492,11 +492,15 @@ Graph.onNodeClick(node => {
   if (!selectedNode1) {
     selectedNode1 = node;
     console.log('Selected first node:', node);
-  } else if (!selectedNode2) {
+  } else {
     selectedNode2 = node;
     console.log('Selected second node:', node);
     createLinkBetweenNodes();
+    // Swap the selected nodes
+    selectedNode1 = selectedNode2;
+    selectedNode2 = null;
   }
+
 });
 
 
@@ -824,10 +828,6 @@ function createLinkBetweenNodes() {
     Graph.simulation.stop();
     Graph.simulation.force('link').links(currentGraphData.links);
     Graph.simulation.alpha(1).restart();
-
-    // Reset the selected nodes
-    selectedNode1 = null;
-    selectedNode2 = null;
   }
 }
 
