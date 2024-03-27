@@ -113,6 +113,7 @@
   transform: translateX(-50%);
   height: 600px;
   max-width: 420px;
+  min-width: 420px;
   background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0px;
@@ -262,9 +263,9 @@
     .message {
       margin-bottom: 10px;
       padding: 5px;
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.0);
       border-radius: 5px;
-      color: #ffffff;
+      color: #d1cf47;
     }
     #node-info {
       position: fixed;
@@ -828,15 +829,15 @@ document.addEventListener('keydown', async (event) => {
       const response = await fetch('http://localhost:5000/stop_recording', { method: 'POST' });
       if (response.ok) {
         const data = await response.json();
-        displayMessage('assistant', data.response);
+        displayMessage('>', data.response);
         await displayGraphList();
       } else {
         console.error('Error:', response.status);
-        displayMessage('assistant', 'An error occurred. Please check the server logs.');
+        displayMessage('>', 'An error occurred. Please check the server logs.');
       }
     } catch (error) {
       console.error('Error:', error);
-      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+      displayMessage('>', 'An error occurred. Please check the browser console.');
     }
   }
 });
@@ -849,11 +850,11 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
       const startResponse = await fetch('http://localhost:5000/start_recording', { method: 'POST' });
       if (startResponse.ok) {
         const startData = await startResponse.json();
-        displayMessage('log', 'Recording started.');
+        displayMessage('>', 'Recording started.');
       }
     } catch (error) {
       console.error('Error:', error);
-      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+      displayMessage('>', 'An error occurred. Please check the browser console.');
     }
   } else {
     isRecording = false;
@@ -861,8 +862,8 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
       const stopResponse = await fetch('http://localhost:5000/stop_recording', { method: 'POST' });
       if (stopResponse.ok) {
         const stopData = await stopResponse.json();
-        displayMessage('log', stopData.log);
-        displayMessage('assistant', stopData.response);
+        displayMessage('>', stopData.log);
+        displayMessage('>', stopData.response);
         await displayGraphList();
 
         // Load the latest graph
@@ -876,11 +877,11 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
         }
       } else {
         console.error('Error:', stopResponse.status);
-        displayMessage('assistant', 'An error occurred. Please check the server logs.');
+        displayMessage('>', 'An error occurred. Please check the server logs.');
       }
     } catch (error) {
       console.error('Error:', error);
-      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+      displayMessage('>', 'An error occurred. Please check the browser console.');
     }
   }
 });
@@ -910,7 +911,7 @@ chatForm.addEventListener('submit', async (event) => {
 
       if (response.ok) {
         const data = await response.json();
-        displayMessage('assistant', data.response);
+        displayMessage('>', data.response);
         await displayGraphList();
 
         // Load the latest graph
@@ -924,11 +925,11 @@ chatForm.addEventListener('submit', async (event) => {
         }
       } else {
         console.error('Error:', response.status);
-        displayMessage('assistant', 'An error occurred. Please check the server logs.');
+        displayMessage('>', 'An error occurred. Please check the server logs.');
       }
     } catch (error) {
       console.error('Error:', error);
-      displayMessage('assistant', 'An error occurred. Please check the browser console.');
+      displayMessage('>', 'An error occurred. Please check the browser console.');
     }
   }
 });
