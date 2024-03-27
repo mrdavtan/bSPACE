@@ -10,17 +10,20 @@
   z-index: 1004;
   top: 0;
   left: 0;
-  background-color: #fff;
+  background-color: rgba(0,0,0, 0.2);
   overflow-x: hidden;
   transition: 0.5s;
-  padding-top: 60px;
+  padding-top: 100px;
+  box-sizing: border-box;
+  border: 1px;
+  border-color: #FFFFFF;
 }
 
 .sidebar a {
   padding: 8px 8px 8px 32px;
   text-decoration: none;
   font-size: 25px;
-  color: #818181;
+  color: #FFFFFF;
   display: block;
   transition: 0.3s;
 }
@@ -32,32 +35,38 @@
 .sidebar .closebtn {
   position: absolute;
   top: 0;
-  right: 25px;
+  left: 10px;
   font-size: 36px;
-  margin-left: 50px;
+  margin-right: 50px;
+  z-index: 1005;
+  color: #8F8F8F8F;
 }
 
 .openbtn {
-  font-size: 20px;
+  top: 5px;
+  left: 5px;
+  position: absolute;
+  font-size: 50px;
   cursor: pointer;
-  background-color: #111;
-  color: white;
-  padding: 10px 15px;
+  background-color: #000000;
+  color: #8F8F8F8F;
+  padding: 10px 20px;
   border: none;
 }
 
 .openbtn:hover {
-  background-color: #F8F8F8F8;
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
 #main {
   transition: margin-left .5s;
-  padding: 16px;
+  padding: 0px;
 }
 
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
-@media screen and (max-height: 450px) {
-  .sidebar {padding-top: 15px;}
+@media screen and (max-height: 1000px) {
+  .sidebar {padding-top: 0px;}
   .sidebar a {font-size: 18px;}
 }
 
@@ -265,17 +274,17 @@ body {
 
 
 <div id="mySidebar" class="sidebar">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-  <a href="#">About</a>
-  <a href="#">Services</a>
-  <a href="#">Clients</a>
-  <a href="#">Contact</a>
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"></a>
+  <a href="#">U</a>
+  <a href="#">V</a>
+  <a href="#">D</a>
+  <a href="#">U</a>
 </div>
 
 
 
 <div id="main">
-  <button class="openbtn" onclick="openNav()">☰ Open Sidebar</button>
+  <button class="openbtn" onclick="openNav()">☰ </button>
 </div>
 
     <div id="floating-widget" class="floating-widget">
@@ -897,15 +906,25 @@ chatForm.addEventListener('submit', async (event) => {
   </script>
 
 <script>
+
 function openNav() {
-  document.getElementById("mySidebar").style.width = "250px";
-  document.getElementById("main").style.marginLeft = "250px";
+    document.getElementById("mySidebar").style.width = "70px";
+    document.getElementById("main").style.marginLeft = "70px";
 }
 
 function closeNav() {
-  document.getElementById("mySidebar").style.width = "0";
-  document.getElementById("main").style.marginLeft = "0";
-}
+    document.getElementById("mySidebar").style.width = "0";
+    document.getElementById("main").style.marginLeft = "0";
+} // Close the sidebar when clicking outside of it
+
+document.addEventListener("click", function(event) {
+    var sidebar = document.getElementById("mySidebar");
+    var openBtn = document.querySelector(".openbtn");
+    if (!sidebar.contains(event.target) && event.target !== openBtn) {
+        closeNav();
+    }
+});
+
 </script>
 
 
