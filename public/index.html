@@ -831,12 +831,34 @@ function createLinkBetweenNodes() {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////
 
 
+document.getElementById('save-graph-btn').addEventListener('click', saveGraphToFile);
 
+async function saveGraphToFile() {
+  const graphData = Graph.graphData();
 
+  try {
+    const response = await fetch('/save-graph', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphData)
+    });
 
-
+    if (response.ok) {
+      console.log('Graph saved successfully');
+      // Optionally, you can update the graph list or perform any other actions
+      displayGraphList();
+    } else {
+      console.error('Error saving graph:', response.status);
+    }
+  } catch (error) {
+    console.error('Error saving graph:', error);
+  }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////
