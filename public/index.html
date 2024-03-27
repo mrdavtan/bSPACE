@@ -474,21 +474,30 @@ function initializeForceSimulation(graphData) {
   });
 }
 
-    Graph.onNodeClick(node => {
-      const nodeInfo = document.getElementById('node-info');
-      nodeInfo.innerHTML = `
-        <strong>Node Information:</strong><br>
-        ID: ${node.id}<br>
-        Label: ${node.label || 'N/A'}<br>
-        Color: ${node.color}<br>
-        Shape: ${node.shape || 'Sphere'}<br>
-        UUID: ${node.uuid || 'N/A'}<br>
-        Date: ${node.date || 'N/A'}<br>
-        Source: ${node.source || 'N/A'}<br>
-        URL: ${node.url ? `<a href="${node.url}" target="_blank">${node.url}</a>` : 'N/A'}<br>
-      `;
-      nodeInfo.style.display = 'block';
-    });
+Graph.onNodeClick(node => {
+  const nodeInfo = document.getElementById('node-info');
+  nodeInfo.innerHTML = `
+    <strong>Node Information:</strong><br>
+    ID: ${node.id}<br>
+    Label: ${node.label || 'N/A'}<br>
+    Color: ${node.color}<br>
+    Shape: ${node.shape || 'Sphere'}<br>
+    UUID: ${node.uuid || 'N/A'}<br>
+    Date: ${node.date || 'N/A'}<br>
+    Source: ${node.source || 'N/A'}<br>
+    URL: ${node.url ? `<a href="${node.url}" target="_blank">${node.url}</a>` : 'N/A'}<br>
+  `;
+  nodeInfo.style.display = 'block';
+
+  if (!selectedNode1) {
+    selectedNode1 = node;
+    console.log('Selected first node:', node);
+  } else if (!selectedNode2) {
+    selectedNode2 = node;
+    console.log('Selected second node:', node);
+    createLinkBetweenNodes();
+  }
+});
 
 
 
@@ -524,23 +533,7 @@ function removeGraphFromList(graphIndex) {
   updateGraphVisualization(graphData, 'remove');
 }
 
-// Function to update the graph visualization dynamically
-function updateGraphVisualization(graphData, operation) {
-  const currentGraphData = Graph.graphData();
 
-  if (operation === 'add') {
-    // Add nodes and links to the existing graph data
-    currentGraphData.nodes = currentGraphData.nodes.concat(graphData.nodes);
-    currentGraphData.links = currentGraphData.links.concat(graphData.links);
-  } else if (operation === 'remove') {
-    // Remove nodes and links from the existing graph data
-    currentGraphData.nodes = currentGraphData.nodes.filter(node => !graphData.nodes.includes(node));
-    currentGraphData.links = currentGraphData.links.filter(link => !graphData.links.includes(link));
-  }
-
-  Graph.graphData(currentGraphData);
-  Graph.simulation.restart();
-}
 
 // Update the displayGraphList function to load the selected graph
 async function displayGraphList() {
@@ -554,16 +547,11 @@ async function displayGraphList() {
         const graphItem = document.createElement('div');
         graphItem.textContent = graph;
         graphItem.addEventListener('click', async () => {
-          graphItem.classList.add('selected');
           const graphData = await loadGraph(graph);
-          if (graphData) {
-            addGraphToList(graphData);
-            updateGraphVisualization();
-          }
+          addGraphToScene(graphData);
         });
         graphList.appendChild(graphItem);
       });
-      return data[0];
     } else {
       console.error('Error:', response.status);
     }
@@ -571,6 +559,57 @@ async function displayGraphList() {
     console.error('Error:', error);
   }
 }
+
+async function addGraphToScene(graphData) {
+  try {
+    const response = await fetch('scene.json');
+    if (response.ok) {
+      const sceneData = await response.json();
+      sceneData.graphs.push(graphData);
+      await updateSceneData(sceneData);
+      updateGraphVisualization();
+    } else {
+      console.error('Error:', response.status);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+async function updateSceneData(sceneData) {
+  try {
+    const response = await fetch('scene.json', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(sceneData)
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update scene data');
+    }
+  } catch (error) {
+    console.error('Error updating scene data:', error);
+  }
+}
+
+function updateGraphVisualization() {
+  fetch('scene.json')
+    .then(response => response.json())
+    .then(sceneData => {
+      const combinedGraphData = sceneData.graphs.reduce((acc, graphData) => {
+        acc.nodes = [...acc.nodes, ...graphData.nodes];
+        acc.links = [...acc.links, ...graphData.links];
+        return acc;
+      }, { nodes: [], links: [] });
+      Graph.graphData(combinedGraphData);
+      initializeForceSimulation(combinedGraphData);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+
 
 
 //////////////////////////////////////////////////////////////////
@@ -733,6 +772,75 @@ loadGraphBtn.addEventListener('click', async () => {
           console.error('Error:', error);
         });
     }
+
+/////////////////////////////////////////////////////////////////////////////
+
+document.getElementById('add-node').addEventListener('click', () => {
+  addNodeToGraph();
+});
+
+function addNodeToGraph() {
+  const currentGraphData = Graph.graphData();
+
+  // Create a new node
+  const newNode = {
+    id: `Node${currentGraphData.nodes.length + 1}`,
+    // Set other node properties as needed
+  };
+
+  // Add the new node to the current graph data
+  currentGraphData.nodes.push(newNode);
+  Graph.graphData(currentGraphData);
+
+  // Update the force simulation with the new node
+  Graph.simulation.stop();
+  Graph.simulation.nodes(currentGraphData.nodes);
+  Graph.simulation.alpha(1).restart();
+
+}
+
+let selectedNode1 = null;
+let selectedNode2 = null;
+
+function createLinkBetweenNodes() {
+  if (selectedNode1 && selectedNode2) {
+    const currentGraphData = Graph.graphData();
+
+    // Create a new link between the selected nodes
+    const newLink = {
+      source: selectedNode1.id,
+      target: selectedNode2.id,
+      label: 'linked to',
+      title: 'linked to',
+      arrows: 'to'
+    };
+
+    // Add the new link to the current graph data
+    currentGraphData.links.push(newLink);
+
+    Graph.graphData(currentGraphData);
+
+    // Update the force simulation with the new link
+    Graph.simulation.stop();
+    Graph.simulation.force('link').links(currentGraphData.links);
+    Graph.simulation.alpha(1).restart();
+
+    // Reset the selected nodes
+    selectedNode1 = null;
+    selectedNode2 = null;
+  }
+}
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
 
 
     document.getElementById('load-graph-btn').addEventListener('click', () => {
