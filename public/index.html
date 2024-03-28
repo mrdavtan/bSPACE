@@ -284,6 +284,12 @@
     }
 
 
+    .message input[type="text"] {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
 @font-face {
   font-family: 'DEC Terminal Modern';
   src: url('/fonts/decterm.ttf') format('truetype');
@@ -437,6 +443,9 @@ body {
       });
     }
 
+
+
+
     function displayNodeInfo(node) {
       const chatWindow = document.querySelector('.chat-window');
       const nodeInfoElement = document.createElement('div');
@@ -467,6 +476,10 @@ body {
         existingEditNodeElement.remove();
       }
 
+  selectedNode1 = null;
+  selectedNode2 = null;
+
+
       if (!selectedNode1) {
         selectedNode1 = node;
         console.log('Selected first node:', node);
@@ -480,26 +493,41 @@ body {
       }
     });
 
-    async function updateNodeProperties(nodeId) {
-      const currentGraphData = Graph.graphData();
-      const node = currentGraphData.nodes.find(node => node.id === nodeId);
+async function updateNodeProperties(nodeId) {
+  const currentGraphData = Graph.graphData();
+  const node = currentGraphData.nodes.find(node => node.id === nodeId);
 
-      if (node) {
-        node.id = document.getElementById('node-id').value;
-        node.label = document.getElementById('node-label').value;
-        node.color = document.getElementById('node-color').value;
-        node.shape = document.getElementById('node-shape').value;
-        node.uuid = document.getElementById('node-uuid').value;
-        node.date = document.getElementById('node-date').value;
-        node.source = document.getElementById('node-source').value;
-        node.url = document.getElementById('node-url').value;
+  if (node) {
+    node.id = document.getElementById('node-id').value;
+    node.label = document.getElementById('node-label').value;
+    node.color = document.getElementById('node-color').value;
+    node.shape = document.getElementById('node-shape').value;
+    node.uuid = document.getElementById('node-uuid').value;
+    node.date = document.getElementById('node-date').value;
+    node.source = document.getElementById('node-source').value;
+    node.url = document.getElementById('node-url').value;
 
-        Graph.graphData(currentGraphData);
-
-        // Save the updated graph data
-        await saveGraphData(currentGraphData);
+    // Update the node label in the graph visualization
+    const nodeObject = Graph.scene().getObjectByName(node.uuid);
+    if (nodeObject) {
+      const sprite = nodeObject.children.find(child => child instanceof SpriteText);
+      if (sprite) {
+        sprite.text = node.label;
       }
     }
+
+    Graph.graphData(currentGraphData);
+    Graph.nodeThreeObject(nodeObject => {
+      const sprite = nodeObject.children.find(child => child instanceof SpriteText);
+      if (sprite) {
+        sprite.text = nodeObject.__data.label;
+      }
+    });
+
+    // Save the updated graph data
+    await saveGraphData(currentGraphData);
+  }
+}
 
     // Global variable to store loaded graphs
     let loadedGraphs = [];
@@ -766,6 +794,13 @@ let selectedNode = null;
 
 document.getElementById('edit-node').addEventListener('click', () => {
   if (selectedNode) {
+    // Deselect the currently selected node
+    if (selectedNode === selectedNode1) {
+      selectedNode1 = null;
+    } else if (selectedNode === selectedNode2) {
+      selectedNode2 = null;
+    }
+
     const chatWindow = document.querySelector('.chat-window');
     const editNodeElement = document.createElement('div');
     editNodeElement.className = 'message';
