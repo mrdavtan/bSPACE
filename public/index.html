@@ -436,12 +436,12 @@ body {
         simulation.stop();
       }
 
-      simulation = d3.forceSimulation()
-        .force('charge', d3.forceManyBody().strength(-200))
-        .force('link', d3.forceLink().id(d => d.id).distance(100).strength(1))
-        .force('center', d3.forceCenter())
-        .alphaDecay(0.05)
-        .velocityDecay(0.8);
+    simulation = d3.forceSimulation()
+      .force('charge', d3.forceManyBody().strength(-100)) // Adjust the strength
+      .force('link', d3.forceLink().id(d => d.id).distance(150).strength(0.1)) // Adjust the distance and strength
+      .force('center', d3.forceCenter())
+      .alphaDecay(0.01) // Adjust the alphaDecay
+      .velocityDecay(0.5); // Adjust the velocityDecay
 
       simulation.nodes(graphData.nodes);
       simulation.force('link').links(graphData.links);
@@ -543,20 +543,9 @@ body {
     // Global variable to store loaded graphs
     let loadedGraphs = [];
 
-    // Function to load a graph
     async function loadGraph(graphFileName) {
       return new Promise((resolve, reject) => {
-        fetch(`graphs/${graphFileName}`)
-          .then(response => response.json())
-          .then(graphData => {
-            Graph.graphData(graphData);
-            initializeForceSimulation(graphData);
-            resolve(graphData);
-          })
-          .catch(error => {
-            console.error('Error loading graph:', error);
-            reject(error);
-          });
+        Graph.jsonUrl(`graphs/${graphFileName}`, resolve, reject);
       });
     }
 
@@ -577,29 +566,30 @@ body {
     }
 
     // Update the displayGraphList function to load the selected graph
-    async function displayGraphList() {
-      try {
-        const response = await fetch('/api/graphs');
-        if (response.ok) {
-          const data = await response.json();
-          const graphList = document.getElementById('graph-list');
-          graphList.innerHTML = '';
-          data.forEach(graph => {
-            const graphItem = document.createElement('div');
-            graphItem.textContent = graph;
-            graphItem.addEventListener('click', async () => {
-              const graphData = await loadGraph(graph);
-              addGraphToScene(graphData);
-            });
-            graphList.appendChild(graphItem);
-          });
-        } else {
-          console.error('Error:', response.status);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
+
+async function displayGraphList() {
+  try {
+    const response = await fetch('/api/graphs');
+    if (response.ok) {
+      const data = await response.json();
+      const graphList = document.getElementById('graph-list');
+      graphList.innerHTML = '';
+      data.forEach(graph => {
+        const graphItem = document.createElement('div');
+        graphItem.textContent = graph;
+        graphItem.addEventListener('click', async () => {
+          const graphData = await loadGraph(graph);
+          addGraphToScene(graphData);
+        });
+        graphList.appendChild(graphItem);
+      });
+    } else {
+      console.error('Error:', response.status);
     }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
 
     async function addGraphToScene(graphData) {
       try {
