@@ -299,86 +299,69 @@ body {
 
 
     </style>
-    <script src="https://unpkg.com/3d-force-graph"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three-spritetext"></script>
 
-    </head>
+  <script src="https://unpkg.com/3d-force-graph"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three-spritetext"></script>
+</head>
+<body>
+  <div id="3d-graph"></div>
+  <div id="node-info"></div>
 
-    <body>
-    <div id="3d-graph"></div>
-    <div id="node-info"></div>
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"></a>
+    <div class="vertical-button-container">
+      <button id="user">USER</button>
+      <button id="views">VIEWS</button>
+      <button id="projects">PROJ</button>
+      <button id="dir">DIR</button>
+      <button id="utils">UTILS</button>
+      <button id="retrieve">RETR</button>
+    </div>
+  </div>
 
+  <div id="main">
+    <button class="openbtn" onclick="openNav()">☰ </button>
+  </div>
 
-
-
-<div id="mySidebar" class="sidebar">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"></a>
-
-
-        <div class="vertical-button-container">
-          <button id="user">USER</button>
-          <button id="views">VIEWS</button>
-          <button id="projects">PROJ</button>
-          <button id="dir">DIR</button>
-          <button id="utils">UTILS</button>
-          <button id="retrieve">RETR</button>
+  <div id="floating-widget" class="floating-widget">
+    <div class="widget-header">
+      <div class="widget-title">CITIZENSPACE</div>
+      <div class="widget-resize"></div>
+    </div>
+    <div class="widget-content">
+      <div class="chat-container">
+        <div class="chat-window">
+          <!-- Chat messages will be displayed here -->
         </div>
-
-
-</div>
-
-
-
-<div id="main">
-  <button class="openbtn" onclick="openNav()">☰ </button>
-</div>
-
-    <div id="floating-widget" class="floating-widget">
-      <div class="widget-header">
-        <div class="widget-title">CITIZENSPACE</div>
-        <div class="widget-resize"></div>
       </div>
-      <div class="widget-content">
-        <div class="chat-container">
-          <div class="chat-window">
-            <!-- Chat messages will be displayed here -->
-          </div>
-
-
-        </div>
-
-          <div class="search-bar">
-            <form id="chat-form">
-              <input type="text" id="user-input" placeholder="Enter a text description...">
-            </form>
-          </div>
-
-
-        <div class="button-container">
-          <button id="load-graph-btn">Load Graph</button>
-          <button id="remove-graph-btn">Remove Graph</button>
-          <button id="scene-list">Scene List</button>
-          <button id="save-graph-btn">Save Graph</button>
-          <button id="graph-dir-btn">Graph Directory</button>
-          <button id="voice-input-btn">Voice Input</button>
-        </div>
-
-        <div class="button-container">
-          <button id="find-node">Find Node</button>
-          <button id="edit-node">Edit Node</button>
-          <button id="add-node">Add Node</button>
-          <button id="link-node">Link Node</button>
-          <button id="add-property">Add Property</button>
-          <button id="rem-property">Remove Property</button>
-        </div>
-
+      <div class="search-bar">
+        <form id="chat-form">
+          <input type="text" id="user-input" placeholder="Enter a text description...">
+        </form>
       </div>
-      <div id="graph-list-container" class="graph-list-container">
-        <h5>collection</h5>
-        <div id="graph-list"></div>
+      <div class="button-container">
+        <button id="load-graph-btn">Load Graph</button>
+        <button id="remove-graph-btn">Remove Graph</button>
+        <button id="scene-list">Scene List</button>
+        <button id="save-graph-btn">Save Graph</button>
+        <button id="graph-dir-btn">Graph Directory</button>
+        <button id="voice-input-btn">Voice Input</button>
+      </div>
+      <div class="button-container">
+        <button id="find-node">Find Node</button>
+        <button id="edit-node">Edit Node</button>
+        <button id="add-node">Add Node</button>
+        <button id="link-node">Link Node</button>
+        <button id="add-property">Add Property</button>
+        <button id="rem-property">Remove Property</button>
       </div>
     </div>
+    <div id="graph-list-container" class="graph-list-container">
+      <h5>collection</h5>
+      <div id="graph-list"></div>
+    </div>
+  </div>
 
   <script type="importmap">
     { "imports": { "three": "https://unpkg.com/three/build/three.module.js" } }
@@ -386,23 +369,16 @@ body {
   <script type="module">
     import SpriteText from "https://unpkg.com/three-spritetext/dist/three-spritetext.mjs";
     import * as THREE from 'three';
-
     import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-
     import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
     import { UnrealBloomPass } from 'https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-
     const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
-      //.jsonUrl('graph.json')
-      //.jsonUrl('graphs/chatgpt_graph_20240321_062405.json') // Add this line here
-
       .backgroundColor('#000003')
       .onNodeClick(node => {
         displayNodeInfo(node);
       })
       .showNavInfo(false)
-
       .nodeLabel('id')
       .nodeAutoColorBy('group')
       .nodeThreeObject(node => {
@@ -419,10 +395,7 @@ body {
         const container = new THREE.Object3D();
         container.add(sphereMesh);
         container.add(sprite);
-
-        // Set the position of the sprite text to be in front of the sphere mesh
         sprite.position.set(0, 0, sphereGeometry.parameters.radius + 20);
-
         return container;
       })
       .linkThreeObjectExtend(true)
@@ -439,219 +412,216 @@ body {
         Object.assign(sprite.position, middlePos);
       });
 
-
-
     let simulation;
 
-function initializeForceSimulation(graphData) {
-  if (simulation) {
-    simulation.stop();
-  }
-
-  simulation = d3.forceSimulation()
-    .force('charge', d3.forceManyBody().strength(-200)) // Decreased repulsion strength
-    .force('link', d3.forceLink().id(d => d.id).distance(100).strength(1)) // Increased link distance and strength
-    .force('center', d3.forceCenter())
-    .alphaDecay(0.05) // Increased alphaDecay for faster convergence
-    .velocityDecay(0.8); // Decreased velocityDecay to maintain node velocities
-
-  simulation.nodes(graphData.nodes);
-  simulation.force('link').links(graphData.links);
-
-  simulation.on('tick', () => {
-    Graph.graphData({
-      nodes: graphData.nodes.map(node => ({ ...node })),
-      links: graphData.links.map(link => ({ ...link }))
-    });
-  });
-}
-
-function displayNodeInfo(node) {
-  const nodeInfo = document.getElementById('node-info');
-  nodeInfo.innerHTML = `
-    <strong>Node Information:</strong><br>
-    ID: ${node.id}<br>
-    Label: ${node.label || 'N/A'}<br>
-    Color: ${node.color}<br>
-    Shape: ${node.shape || 'Sphere'}<br>
-    UUID: ${node.uuid || 'N/A'}<br>
-    Date: ${node.date || 'N/A'}<br>
-    Source: ${node.source || 'N/A'}<br>
-    URL: ${node.url ? `<a href="${node.url}" target="_blank">${node.url}</a>` : 'N/A'}<br>
-  `;
-  nodeInfo.style.display = 'block';
-}
-
-Graph.onNodeClick(node => {
-  document.getElementById('3d-graph').classList.remove('graph-dragging');
-  selectedNode = node;
-  displayNodeInfo(node);
-
-  if (!selectedNode1) {
-    selectedNode1 = node;
-    console.log('Selected first node:', node);
-  } else {
-    selectedNode2 = node;
-    console.log('Selected second node:', node);
-    createLinkBetweenNodes();
-    // Swap the selected nodes
-    selectedNode1 = selectedNode2;
-    selectedNode2 = null;
-  }
-});
-
-function updateNodeProperties(nodeId) {
-  const currentGraphData = Graph.graphData();
-  const node = currentGraphData.nodes.find(node => node.id === nodeId);
-
-  if (node) {
-    node.id = document.getElementById('node-id').value;
-    node.label = document.getElementById('node-label').value;
-    node.color = document.getElementById('node-color').value;
-    node.shape = document.getElementById('node-shape').value;
-    node.uuid = document.getElementById('node-uuid').value;
-    node.date = document.getElementById('node-date').value;
-    node.source = document.getElementById('node-source').value;
-    node.url = document.getElementById('node-url').value;
-
-    Graph.graphData(currentGraphData);
-  }
-}
-
-///////////////////////////// LOADING GRAPHS   ///////////////////////
-
-
-// Global variable to store loaded graphs
-let loadedGraphs = [];
-
-// Function to load a graph
-async function loadGraph(graphFileName) {
-  return new Promise((resolve, reject) => {
-    Graph.jsonUrl(`graphs/${graphFileName}`, resolve, reject);
-  });
-}
-
-
-// Function to add a graph to the loaded graphs list and update the scene view
-async function addGraphToList(graphFileName) {
-  const graphData = await loadGraph(graphFileName);
-  loadedGraphs.push(graphData);
-  updateSceneView();
-  updateGraphVisualization(graphData, 'add');
-}
-
-// Function to remove a graph from the loaded graphs list and update the scene view
-function removeGraphFromList(graphIndex) {
-  const graphData = loadedGraphs[graphIndex];
-  loadedGraphs.splice(graphIndex, 1);
-  updateSceneView();
-  updateGraphVisualization(graphData, 'remove');
-}
-
-
-
-// Update the displayGraphList function to load the selected graph
-async function displayGraphList() {
-  try {
-    const response = await fetch('/api/graphs');
-    if (response.ok) {
-      const data = await response.json();
-      const graphList = document.getElementById('graph-list');
-      graphList.innerHTML = '';
-      data.forEach(graph => {
-        const graphItem = document.createElement('div');
-        graphItem.textContent = graph;
-        graphItem.addEventListener('click', async () => {
-          const graphData = await loadGraph(graph);
-          addGraphToScene(graphData);
-        });
-        graphList.appendChild(graphItem);
-      });
-    } else {
-      console.error('Error:', response.status);
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
-
-async function addGraphToScene(graphData) {
-  try {
-    const response = await fetch('scene.json');
-    if (response.ok) {
-      const sceneData = await response.json();
-      sceneData.graphs.push(graphData);
-      await updateSceneData(sceneData);
-      updateGraphVisualization();
-    } else {
-      console.error('Error:', response.status);
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
-
-async function updateSceneData(sceneData) {
-  try {
-    const response = await fetch('scene.json', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(sceneData)
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update scene data');
-    }
-  } catch (error) {
-    console.error('Error updating scene data:', error);
-  }
-}
-
-function updateGraphVisualization() {
-  fetch('scene.json')
-    .then(response => response.json())
-    .then(sceneData => {
-      const combinedGraphData = sceneData.graphs.reduce((acc, graphData) => {
-        acc.nodes = [...acc.nodes, ...graphData.nodes];
-        acc.links = [...acc.links, ...graphData.links];
-        return acc;
-      }, { nodes: [], links: [] });
-      Graph.graphData(combinedGraphData);
-      initializeForceSimulation(combinedGraphData);
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-}
-
-
-
-//////////////////////////////////////////////////////////////////
-
-
-
-
-const loadGraphBtn = document.getElementById('load-graph-btn');
-
-loadGraphBtn.addEventListener('click', async () => {
-  try {
-    const response = await fetch('/api/graphs');
-    if (response.ok) {
-      const graphFiles = await response.json();
-      if (graphFiles.length > 0) {
-        const latestFile = graphFiles[0]; // Get the latest file (assuming the list is sorted in descending order)
-        Graph.jsonUrl(`graphs/${latestFile}`);
-      } else {
-        console.log('No graph files found.');
+    function initializeForceSimulation(graphData) {
+      if (simulation) {
+        simulation.stop();
       }
-    } else {
-      console.error('Error:', response.status);
+
+      simulation = d3.forceSimulation()
+        .force('charge', d3.forceManyBody().strength(-200))
+        .force('link', d3.forceLink().id(d => d.id).distance(100).strength(1))
+        .force('center', d3.forceCenter())
+        .alphaDecay(0.05)
+        .velocityDecay(0.8);
+
+      simulation.nodes(graphData.nodes);
+      simulation.force('link').links(graphData.links);
+
+      simulation.on('tick', () => {
+        Graph.graphData({
+          nodes: graphData.nodes.map(node => ({ ...node })),
+          links: graphData.links.map(link => ({ ...link }))
+        });
+      });
     }
-  } catch (error) {
-    console.error('Error:', error);
-  }
-});
+
+    function displayNodeInfo(node) {
+      const chatWindow = document.querySelector('.chat-window');
+      const nodeInfoElement = document.createElement('div');
+      nodeInfoElement.className = 'message';
+      nodeInfoElement.innerHTML = `
+        <strong>Node Information:</strong><br>
+        ID: ${node.id}<br>
+        Label: ${node.label || 'N/A'}<br>
+        Color: ${node.color}<br>
+        Shape: ${node.shape || 'Sphere'}<br>
+        UUID: ${node.uuid || 'N/A'}<br>
+        Date: ${node.date || 'N/A'}<br>
+        Source: ${node.source || 'N/A'}<br>
+        URL: ${node.url ? `<a href="${node.url}" target="_blank">${node.url}</a>` : 'N/A'}<br>
+      `;
+      chatWindow.appendChild(nodeInfoElement);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    Graph.onNodeClick(node => {
+      document.getElementById('3d-graph').classList.remove('graph-dragging');
+      selectedNode = node;
+      displayNodeInfo(node);
+
+      // Remove existing edit node element from the chat window
+      const existingEditNodeElement = document.querySelector('.message.edit-node');
+      if (existingEditNodeElement) {
+        existingEditNodeElement.remove();
+      }
+
+      if (!selectedNode1) {
+        selectedNode1 = node;
+        console.log('Selected first node:', node);
+      } else {
+        selectedNode2 = node;
+        console.log('Selected second node:', node);
+        createLinkBetweenNodes();
+        // Reset the selected nodes
+        selectedNode1 = null;
+        selectedNode2 = null;
+      }
+    });
+
+    async function updateNodeProperties(nodeId) {
+      const currentGraphData = Graph.graphData();
+      const node = currentGraphData.nodes.find(node => node.id === nodeId);
+
+      if (node) {
+        node.id = document.getElementById('node-id').value;
+        node.label = document.getElementById('node-label').value;
+        node.color = document.getElementById('node-color').value;
+        node.shape = document.getElementById('node-shape').value;
+        node.uuid = document.getElementById('node-uuid').value;
+        node.date = document.getElementById('node-date').value;
+        node.source = document.getElementById('node-source').value;
+        node.url = document.getElementById('node-url').value;
+
+        Graph.graphData(currentGraphData);
+
+        // Save the updated graph data
+        await saveGraphData(currentGraphData);
+      }
+    }
+
+    // Global variable to store loaded graphs
+    let loadedGraphs = [];
+
+    // Function to load a graph
+    async function loadGraph(graphFileName) {
+      return new Promise((resolve, reject) => {
+        Graph.jsonUrl(`graphs/${graphFileName}`, resolve, reject);
+      });
+    }
+
+    // Function to add a graph to the loaded graphs list and update the scene view
+    async function addGraphToList(graphFileName) {
+      const graphData = await loadGraph(graphFileName);
+      loadedGraphs.push(graphData);
+      updateSceneView();
+      updateGraphVisualization(graphData, 'add');
+    }
+
+    // Function to remove a graph from the loaded graphs list and update the scene view
+    function removeGraphFromList(graphIndex) {
+      const graphData = loadedGraphs[graphIndex];
+      loadedGraphs.splice(graphIndex, 1);
+      updateSceneView();
+      updateGraphVisualization(graphData, 'remove');
+    }
+
+    // Update the displayGraphList function to load the selected graph
+    async function displayGraphList() {
+      try {
+        const response = await fetch('/api/graphs');
+        if (response.ok) {
+          const data = await response.json();
+          const graphList = document.getElementById('graph-list');
+          graphList.innerHTML = '';
+          data.forEach(graph => {
+            const graphItem = document.createElement('div');
+            graphItem.textContent = graph;
+            graphItem.addEventListener('click', async () => {
+              const graphData = await loadGraph(graph);
+              addGraphToScene(graphData);
+            });
+            graphList.appendChild(graphItem);
+          });
+        } else {
+          console.error('Error:', response.status);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function addGraphToScene(graphData) {
+      try {
+        const response = await fetch('scene.json');
+        if (response.ok) {
+          const sceneData = await response.json();
+          sceneData.graphs.push(graphData);
+          await updateSceneData(sceneData);
+          updateGraphVisualization();
+        } else {
+          console.error('Error:', response.status);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function updateSceneData(sceneData) {
+      try {
+        const response = await fetch('scene.json', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(sceneData)
+        });
+        if (!response.ok) {
+          throw new Error('Failed to update scene data');
+        }
+      } catch (error) {
+        console.error('Error updating scene data:', error);
+      }
+    }
+
+    function updateGraphVisualization() {
+      fetch('scene.json')
+        .then(response => response.json())
+        .then(sceneData => {
+          const combinedGraphData = sceneData.graphs.reduce((acc, graphData) => {
+            acc.nodes = [...acc.nodes, ...graphData.nodes];
+            acc.links = [...acc.links, ...graphData.links];
+            return acc;
+          }, { nodes: [], links: [] });
+          Graph.graphData(combinedGraphData);
+          initializeForceSimulation(combinedGraphData);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    const loadGraphBtn = document.getElementById('load-graph-btn');
+
+    loadGraphBtn.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/graphs');
+        if (response.ok) {
+          const graphFiles = await response.json();
+          if (graphFiles.length > 0) {
+            const latestFile = graphFiles[0]; // Get the latest file (assuming the list is sorted in descending order)
+            Graph.jsonUrl(`graphs/${latestFile}`);
+          } else {
+            console.log('No graph files found.');
+          }
+        } else {
+          console.error('Error:', response.status);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    });
 
     document.addEventListener('click', event => {
       const nodeInfo = document.getElementById('node-info');
@@ -660,13 +630,6 @@ loadGraphBtn.addEventListener('click', async () => {
         nodeInfo.style.display = 'none';
       }
     });
-
-//    function addNode(node) {
-//      const graphData = Graph.graphData();
-//      graphData.nodes.push(node);
-//      Graph.graphData(graphData);
-//      initializeForceSimulation(graphData);
-//    }
 
     function addNodeInView() {
       const distanceInFrontOfCamera = 100; // Adjust this value to suit the scale of your graph
@@ -691,8 +654,8 @@ loadGraphBtn.addEventListener('click', async () => {
         y: newPosition.y,
         z: newPosition.z,
         group: Math.floor(Math.random() * 10) // Example group assignment
-
       };
+
       // Add the new node to the graph data
       const graphData = Graph.graphData();
       graphData.nodes.push(newNode);
@@ -704,17 +667,14 @@ loadGraphBtn.addEventListener('click', async () => {
     }
 
     document.addEventListener('click', (event) => {
-  if (!floatingWidget.contains(event.target)) {
-    graphListContainer.style.display = 'none';
-  }
-});
-
-
+      if (!floatingWidget.contains(event.target)) {
+        graphListContainer.style.display = 'none';
+      }
+    });
 
     const graphDirBtn = document.getElementById('graph-dir-btn');
     const graphListContainer = document.getElementById('graph-list-container');
     const floatingWidget = document.getElementById('floating-widget');
-
 
     graphDirBtn.addEventListener('click', () => {
       graphListContainer.style.display = 'block';
@@ -739,55 +699,50 @@ loadGraphBtn.addEventListener('click', async () => {
       startHeight = floatingWidget.offsetHeight;
     }
 
-    function drag(e) {
-      if (!isDragging) return;
+function drag(e) {
+  if (!isDragging) return;
 
-      const currentX = e.clientX - startX;
-      const currentY = e.clientY - startY;
-      const currentWidth = startWidth + (e.clientX - floatingWidget.offsetLeft - startX);
-      const currentHeight = startHeight + (e.clientY - floatingWidget.offsetTop - startY);
+  const currentX = e.clientX - startX;
+  const currentY = e.clientY - startY;
+  const currentWidth = startWidth + (e.clientX - floatingWidget.offsetLeft - startX);
+  const currentHeight = startHeight + (e.clientY - floatingWidget.offsetTop - startY);
 
-      floatingWidget.style.left = currentX + 'px';
-      floatingWidget.style.top = currentY + 'px';
-      floatingWidget.style.width = currentWidth + 'px';
-      floatingWidget.style.height = currentHeight + 'px';
-    }
+  floatingWidget.style.left = currentX + 'px';
+  floatingWidget.style.top = currentY + 'px';
+  floatingWidget.style.width = currentWidth + 'px';
+  floatingWidget.style.height = currentHeight + 'px';
+}
 
-    function stopDragging() {
-      isDragging = false;
-    }
+function stopDragging() {
+  isDragging = false;
+}
 
+const graphContainer = document.getElementById('3d-graph');
+graphContainer.addEventListener('dragover', dragOver);
+graphContainer.addEventListener('drop', drop);
 
+function dragStart(event) {
+  event.dataTransfer.setData('text/plain', event.target.textContent);
+}
 
+function dragOver(event) {
+  event.preventDefault();
+}
 
-    const graphContainer = document.getElementById('3d-graph');
-    graphContainer.addEventListener('dragover', dragOver);
-    graphContainer.addEventListener('drop', drop);
+function drop(event) {
+  event.preventDefault();
+  const graphName = event.dataTransfer.getData('text');
 
-    function dragStart(event) {
-      event.dataTransfer.setData('text/plain', event.target.textContent);
-    }
-
-    function dragOver(event) {
-      event.preventDefault();
-    }
-
-    function drop(event) {
-      event.preventDefault();
-      const graphName = event.dataTransfer.getData('text');
-
-      fetch(`graphs/${graphName}`)
-        .then(response => response.json())
-        .then(graphData => {
-          Graph.graphData(graphData);
-          initializeForceSimulation(graphData);
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
-    }
-
-////////////////////////// ADD NODE  ///////////////////////////////
+  fetch(`graphs/${graphName}`)
+    .then(response => response.json())
+    .then(graphData => {
+      Graph.graphData(graphData);
+      initializeForceSimulation(graphData);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
 
 // Helper function to generate a unique UUID
 function generateUUID() {
@@ -811,9 +766,11 @@ let selectedNode = null;
 
 document.getElementById('edit-node').addEventListener('click', () => {
   if (selectedNode) {
-    const nodeInfo = document.getElementById('node-info');
-    nodeInfo.innerHTML = `
-      <strong>Node Information:</strong><br>
+    const chatWindow = document.querySelector('.chat-window');
+    const editNodeElement = document.createElement('div');
+    editNodeElement.className = 'message';
+    editNodeElement.innerHTML = `
+      <strong>Edit Node Information:</strong><br>
       ID: <input type="text" id="node-id" value="${selectedNode.id}"><br>
       Label: <input type="text" id="node-label" value="${selectedNode.label}"><br>
       Color: <input type="text" id="node-color" value="${selectedNode.color}"><br>
@@ -824,7 +781,20 @@ document.getElementById('edit-node').addEventListener('click', () => {
       URL: <input type="text" id="node-url" value="${selectedNode.url}"><br>
       <button onclick="updateNodeProperties('${selectedNode.id}')">Update</button>
     `;
-    nodeInfo.style.display = 'block';
+    chatWindow.appendChild(editNodeElement);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    editNodeElement.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        updateNodeProperties(selectedNode.id);
+      }
+    });
+
+    document.addEventListener('click', event => {
+      if (!editNodeElement.contains(event.target)) {
+        updateNodeProperties(selectedNode.id);
+      }
+    });
   } else {
     console.log('No node selected for editing.');
   }
@@ -860,7 +830,6 @@ function addNodeToGraph() {
   Graph.simulation.alpha(1).restart();
 }
 
-
 let selectedNode1 = null;
 let selectedNode2 = null;
 
@@ -889,14 +858,7 @@ function createLinkBetweenNodes() {
   }
 }
 
-////////////////////////// LOAD/SAVE GRAPH  /////////////////////////
-
-
-document.getElementById('save-graph-btn').addEventListener('click', saveGraphToFile);
-
-async function saveGraphToFile() {
-  const graphData = Graph.graphData();
-
+async function saveGraphData(graphData) {
   try {
     const response = await fetch('/save-graph', {
       method: 'POST',
@@ -907,73 +869,64 @@ async function saveGraphToFile() {
     });
 
     if (response.ok) {
-      console.log('Graph saved successfully');
-      // Optionally, you can update the graph list or perform any other actions
-      displayGraphList();
+      console.log('Graph data saved successfully');
     } else {
-      console.error('Error saving graph:', response.status);
+      console.error('Error saving graph data:', response.status);
     }
   } catch (error) {
-    console.error('Error saving graph:', error);
+    console.error('Error saving graph data:', error);
   }
 }
 
+document.getElementById('load-graph-btn').addEventListener('click', () => {
+  const selectedGraph = document.getElementById('graph-select').value;
+  Graph.jsonUrl(`graphs/${selectedGraph}`);
+});
 
-////////////////////////////// SCENE LIST ///////////////////////////
+// Removing Graphs
+document.getElementById('remove-graph-btn').addEventListener('click', () => {
+  Graph.graphData({nodes: [], links: []});
+});
 
-
-
-    document.getElementById('load-graph-btn').addEventListener('click', () => {
-      const selectedGraph = document.getElementById('graph-select').value;
-      Graph.jsonUrl(`graphs/${selectedGraph}`);
-    });
-
-    // Removing Graphs
-    document.getElementById('remove-graph-btn').addEventListener('click', () => {
-      Graph.graphData({nodes: [], links: []});
-    });
-
-
-
-    // Combining Graphs
-    document.getElementById('scene-list').addEventListener('click', async () => {
-      const selectedGraphs = Array.from(document.querySelectorAll('#graph-select option:checked')).map(option => option.value);
-      try {
-        const combinedGraph = {nodes: [], links: []};
-        for (const graph of selectedGraphs) {
-          const response = await fetch(`graphs/${graph}`);
-          if (response.ok) {
-            const graphData = await response.json();
-            combinedGraph.nodes.push(...graphData.nodes);
-            combinedGraph.links.push(...graphData.links);
-          }
-        }
-        Graph.graphData(combinedGraph);
-      } catch (error) {
-        console.error('Error:', error);
+// Combining Graphs
+document.getElementById('scene-list').addEventListener('click', async () => {
+  const selectedGraphs = Array.from(document.querySelectorAll('#graph-select option:checked')).map(option => option.value);
+  try {
+    const combinedGraph = {nodes: [], links: []};
+    for (const graph of selectedGraphs) {
+      const response = await fetch(`graphs/${graph}`);
+      if (response.ok) {
+        const graphData = await response.json();
+        combinedGraph.nodes.push(...graphData.nodes);
+        combinedGraph.links.push(...graphData.links);
       }
-    });
+    }
+    Graph.graphData(combinedGraph);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+});
 
-    // Saving Graphs
-    document.getElementById('save-graph-btn').addEventListener('click', async () => {
-      const graphData = Graph.graphData();
-      try {
-        const response = await fetch('/api/save-graph', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(graphData)
-        });
-        if (response.ok) {
-          console.log('Graph saved successfully');
-        } else {
-          console.error('Error:', response.status);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
+// Saving Graphs
+document.getElementById('save-graph-btn').addEventListener('click', async () => {
+  const graphData = Graph.graphData();
+  try {
+    const response = await fetch('/api/save-graph', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphData)
     });
+    if (response.ok) {
+      console.log('Graph saved successfully');
+    } else {
+      console.error('Error:', response.status);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+});
 
 // Load graph on page load
 fetch('graphs/default-graph.json')
@@ -1003,11 +956,6 @@ async function loadLatestGraph() {
   }
 }
 
-
-
-////////////////////VOICE RECORDING//////////////////////
-
-
 let isRecording = false;
 
 document.addEventListener('keydown', async (event) => {
@@ -1029,7 +977,6 @@ document.addEventListener('keydown', async (event) => {
     }
   }
 });
-
 
 document.getElementById('voice-input-btn').addEventListener('click', async () => {
   if (!isRecording) {
@@ -1074,13 +1021,9 @@ document.getElementById('voice-input-btn').addEventListener('click', async () =>
   }
 });
 
-/////////////////////////TEXT INPUT/////////////////////
-
-
-    const chatForm = document.getElementById('chat-form');
-    const userInput = document.getElementById('user-input');
-    const chatWindow = document.querySelector('.chat-window');
-
+const chatForm = document.getElementById('chat-form');
+const userInput = document.getElementById('user-input');
+const chatWindow = document.querySelector('.chat-window');
 
 chatForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -1122,42 +1065,44 @@ chatForm.addEventListener('submit', async (event) => {
   }
 });
 
-
-    function displayMessage(sender, message) {
-      const messageElement = document.createElement('div');
-      messageElement.className = 'message';
-      messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
-      chatWindow.appendChild(messageElement);
-      chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    // Call the displayGraphList function to populate the graph list
-    displayGraphList();
-
-  </script>
-
-<script>
-
-function openNav() {
-    document.getElementById("mySidebar").style.width = "70px";
-    document.getElementById("main").style.marginLeft = "70px";
+function displayMessage(sender, message) {
+  const messageElement = document.createElement('div');
+  messageElement.className = 'message';
+  messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  chatWindow.appendChild(messageElement);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-function closeNav() {
-    document.getElementById("mySidebar").style.width = "0";
-    document.getElementById("main").style.marginLeft = "0";
-} // Close the sidebar when clicking outside of it
+// Call the displayGraphList function to populate the graph list
+displayGraphList();
 
-document.addEventListener("click", function(event) {
-    var sidebar = document.getElementById("mySidebar");
-    var openBtn = document.querySelector(".openbtn");
-    if (!sidebar.contains(event.target) && event.target !== openBtn) {
-        closeNav();
-    }
-});
+
+
+ </script>
+
+ <script>
+   function openNav() {
+     document.getElementById("mySidebar").style.width = "70px";
+     document.getElementById("main").style.marginLeft = "70px";
+   }
+
+   function closeNav() {
+     document.getElementById("mySidebar").style.width = "0";
+     document.getElementById("main").style.marginLeft = "0";
+   }
+
+   // Close the sidebar when clicking outside of it
+   document.addEventListener("click", function(event) {
+     var sidebar = document.getElementById("mySidebar");
+     var openBtn = document.querySelector(".openbtn");
+     if (!sidebar.contains(event.target) && event.target !== openBtn) {
+       closeNav();
+     }
+   });
+ </script>
+</body>
+</html>
 
 </script>
-
-
-</body>
+</body >
 </html>
