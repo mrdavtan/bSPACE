@@ -279,6 +279,10 @@
       color: #ffffff;
     }
 
+    .graph-dragging .scene-tooltip {
+      display: none !important;
+    }
+
 
 @font-face {
   font-family: 'DEC Terminal Modern';
@@ -376,18 +380,6 @@ body {
       </div>
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
   <script type="importmap">
     { "imports": { "three": "https://unpkg.com/three/build/three.module.js" } }
   </script>
@@ -474,7 +466,7 @@ function initializeForceSimulation(graphData) {
   });
 }
 
-Graph.onNodeClick(node => {
+function displayNodeInfo(node) {
   const nodeInfo = document.getElementById('node-info');
   nodeInfo.innerHTML = `
     <strong>Node Information:</strong><br>
@@ -488,6 +480,12 @@ Graph.onNodeClick(node => {
     URL: ${node.url ? `<a href="${node.url}" target="_blank">${node.url}</a>` : 'N/A'}<br>
   `;
   nodeInfo.style.display = 'block';
+}
+
+Graph.onNodeClick(node => {
+  document.getElementById('3d-graph').classList.remove('graph-dragging');
+  selectedNode = node;
+  displayNodeInfo(node);
 
   if (!selectedNode1) {
     selectedNode1 = node;
@@ -500,14 +498,27 @@ Graph.onNodeClick(node => {
     selectedNode1 = selectedNode2;
     selectedNode2 = null;
   }
-
 });
 
+function updateNodeProperties(nodeId) {
+  const currentGraphData = Graph.graphData();
+  const node = currentGraphData.nodes.find(node => node.id === nodeId);
 
+  if (node) {
+    node.id = document.getElementById('node-id').value;
+    node.label = document.getElementById('node-label').value;
+    node.color = document.getElementById('node-color').value;
+    node.shape = document.getElementById('node-shape').value;
+    node.uuid = document.getElementById('node-uuid').value;
+    node.date = document.getElementById('node-date').value;
+    node.source = document.getElementById('node-source').value;
+    node.url = document.getElementById('node-url').value;
 
+    Graph.graphData(currentGraphData);
+  }
+}
 
-
-///////////////////////////// LOADING GRAPHS   ////////////////////////////////
+///////////////////////////// LOADING GRAPHS   ///////////////////////
 
 
 // Global variable to store loaded graphs
@@ -650,12 +661,12 @@ loadGraphBtn.addEventListener('click', async () => {
       }
     });
 
-    function addNode(node) {
-      const graphData = Graph.graphData();
-      graphData.nodes.push(node);
-      Graph.graphData(graphData);
-      initializeForceSimulation(graphData);
-    }
+//    function addNode(node) {
+//      const graphData = Graph.graphData();
+//      graphData.nodes.push(node);
+//      Graph.graphData(graphData);
+//      initializeForceSimulation(graphData);
+//    }
 
     function addNodeInView() {
       const distanceInFrontOfCamera = 100; // Adjust this value to suit the scale of your graph
@@ -682,7 +693,6 @@ loadGraphBtn.addEventListener('click', async () => {
         group: Math.floor(Math.random() * 10) // Example group assignment
 
       };
-
       // Add the new node to the graph data
       const graphData = Graph.graphData();
       graphData.nodes.push(newNode);
@@ -777,7 +787,48 @@ loadGraphBtn.addEventListener('click', async () => {
         });
     }
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////// ADD NODE  ///////////////////////////////
+
+// Helper function to generate a unique UUID
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+// Helper function to get the current date in the desired format
+function getCurrentDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+let selectedNode = null;
+
+document.getElementById('edit-node').addEventListener('click', () => {
+  if (selectedNode) {
+    const nodeInfo = document.getElementById('node-info');
+    nodeInfo.innerHTML = `
+      <strong>Node Information:</strong><br>
+      ID: <input type="text" id="node-id" value="${selectedNode.id}"><br>
+      Label: <input type="text" id="node-label" value="${selectedNode.label}"><br>
+      Color: <input type="text" id="node-color" value="${selectedNode.color}"><br>
+      Shape: <input type="text" id="node-shape" value="${selectedNode.shape}"><br>
+      UUID: <input type="text" id="node-uuid" value="${selectedNode.uuid}"><br>
+      Date: <input type="text" id="node-date" value="${selectedNode.date}"><br>
+      Source: <input type="text" id="node-source" value="${selectedNode.source}"><br>
+      URL: <input type="text" id="node-url" value="${selectedNode.url}"><br>
+      <button onclick="updateNodeProperties('${selectedNode.id}')">Update</button>
+    `;
+    nodeInfo.style.display = 'block';
+  } else {
+    console.log('No node selected for editing.');
+  }
+});
 
 document.getElementById('add-node').addEventListener('click', () => {
   addNodeToGraph();
@@ -786,22 +837,29 @@ document.getElementById('add-node').addEventListener('click', () => {
 function addNodeToGraph() {
   const currentGraphData = Graph.graphData();
 
-  // Create a new node
+  // Create a new node with default properties
   const newNode = {
     id: `Node${currentGraphData.nodes.length + 1}`,
-    // Set other node properties as needed
+    label: `Node${currentGraphData.nodes.length + 1}`,
+    color: '#AAAAAA',
+    shape: 'circle',
+    uuid: generateUUID(),
+    date: getCurrentDate(),
+    source: 'User Input',
+    url: ''
   };
 
   // Add the new node to the current graph data
   currentGraphData.nodes.push(newNode);
+
   Graph.graphData(currentGraphData);
 
   // Update the force simulation with the new node
   Graph.simulation.stop();
   Graph.simulation.nodes(currentGraphData.nodes);
   Graph.simulation.alpha(1).restart();
-
 }
+
 
 let selectedNode1 = null;
 let selectedNode2 = null;
@@ -810,12 +868,12 @@ function createLinkBetweenNodes() {
   if (selectedNode1 && selectedNode2) {
     const currentGraphData = Graph.graphData();
 
-    // Create a new link between the selected nodes
+    // Create a new link between the selected nodes with default properties
     const newLink = {
       source: selectedNode1.id,
       target: selectedNode2.id,
-      label: 'linked to',
-      title: 'linked to',
+      label: 'Link',
+      title: 'Link',
       arrows: 'to'
     };
 
@@ -831,7 +889,7 @@ function createLinkBetweenNodes() {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////
+////////////////////////// LOAD/SAVE GRAPH  /////////////////////////
 
 
 document.getElementById('save-graph-btn').addEventListener('click', saveGraphToFile);
@@ -861,7 +919,7 @@ async function saveGraphToFile() {
 }
 
 
-////////////////////////////////////////////////////////////////////////////
+////////////////////////////// SCENE LIST ///////////////////////////
 
 
 
