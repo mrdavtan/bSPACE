@@ -304,7 +304,7 @@ body {
 }
 
 
-    </style>
+  </style>
 
   <script src="https://unpkg.com/3d-force-graph"></script>
   <script src="https://cdn.jsdelivr.net/npm/three"></script>
@@ -379,10 +379,21 @@ body {
     import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
     import { UnrealBloomPass } from 'https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
+    let selectedNodes = new Set();
+    let selectedNode = null;
+
     const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
       .backgroundColor('#000003')
+      .nodeColor(node => selectedNodes.has(node.id) ? 'yellow' : 'light grey') // Change color based on selection
       .onNodeClick(node => {
-        displayNodeInfo(node);
+        // Check if the node is already selected
+        if (selectedNodes.has(node.id)) {
+          selectedNodes.delete(node.id); // If so, deselect it
+        } else {
+          selectedNodes.add(node.id); // Otherwise, select it
+        }
+        Graph.refresh(); // This method might need to be adjusted if ForceGraph3D does not have a refresh method
+        displayNodeInfo(node); // Continue with displaying node info
       })
       .showNavInfo(false)
       .nodeLabel('id')
@@ -395,7 +406,7 @@ body {
           opacity: 0.4
         });
         const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        const sprite = new SpriteText(node.id);
+        const sprite = new SpriteText(node.label); // Use node.label instead of node.id
         sprite.textHeight = 8;
         sprite.color = node.color || 'grey';
         const container = new THREE.Object3D();
@@ -443,9 +454,6 @@ body {
       });
     }
 
-
-
-
     function displayNodeInfo(node) {
       const chatWindow = document.querySelector('.chat-window');
       const nodeInfoElement = document.createElement('div');
@@ -465,6 +473,9 @@ body {
       chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
+    let selectedNode1 = null;
+    let selectedNode2 = null;
+
     Graph.onNodeClick(node => {
       document.getElementById('3d-graph').classList.remove('graph-dragging');
       selectedNode = node;
@@ -476,58 +487,58 @@ body {
         existingEditNodeElement.remove();
       }
 
-  selectedNode1 = null;
-  selectedNode2 = null;
-
-
       if (!selectedNode1) {
         selectedNode1 = node;
         console.log('Selected first node:', node);
-      } else {
+      } else if (!selectedNode2 && node !== selectedNode1) {
         selectedNode2 = node;
         console.log('Selected second node:', node);
         createLinkBetweenNodes();
         // Reset the selected nodes
         selectedNode1 = null;
         selectedNode2 = null;
+      } else {
+        // Reset the selected nodes if the same node is clicked again
+        selectedNode1 = null;
+        selectedNode2 = null;
       }
     });
 
-async function updateNodeProperties(nodeId) {
-  const currentGraphData = Graph.graphData();
-  const node = currentGraphData.nodes.find(node => node.id === nodeId);
+    async function updateNodeProperties(nodeId) {
+      const currentGraphData = Graph.graphData();
+      const node = currentGraphData.nodes.find(node => node.id === nodeId);
 
-  if (node) {
-    node.id = document.getElementById('node-id').value;
-    node.label = document.getElementById('node-label').value;
-    node.color = document.getElementById('node-color').value;
-    node.shape = document.getElementById('node-shape').value;
-    node.uuid = document.getElementById('node-uuid').value;
-    node.date = document.getElementById('node-date').value;
-    node.source = document.getElementById('node-source').value;
-    node.url = document.getElementById('node-url').value;
+      if (node) {
+        node.id = document.getElementById('node-id').value;
+        node.label = document.getElementById('node-label').value;
+        node.color = document.getElementById('node-color').value;
+        node.shape = document.getElementById('node-shape').value;
+        node.uuid = document.getElementById('node-uuid').value;
+        node.date = document.getElementById('node-date').value;
+        node.source = document.getElementById('node-source').value;
+        node.url = document.getElementById('node-url').value;
 
-    // Update the node label in the graph visualization
-    const nodeObject = Graph.scene().getObjectByName(node.uuid);
-    if (nodeObject) {
-      const sprite = nodeObject.children.find(child => child instanceof SpriteText);
-      if (sprite) {
-        sprite.text = node.label;
+        // Update the node label in the graph visualization
+        const nodeObject = Graph.scene().getObjectByName(node.uuid);
+        if (nodeObject) {
+          const sprite = nodeObject.children.find(child => child instanceof SpriteText);
+          if (sprite) {
+            sprite.text = node.label;
+          }
+        }
+
+        Graph.graphData(currentGraphData);
+        Graph.nodeThreeObject(nodeObject => {
+          const sprite = nodeObject.children.find(child => child instanceof SpriteText);
+          if (sprite) {
+            sprite.text = nodeObject.__data.label;
+          }
+        });
+
+        // Save the updated graph data
+        await saveGraphData(currentGraphData);
       }
     }
-
-    Graph.graphData(currentGraphData);
-    Graph.nodeThreeObject(nodeObject => {
-      const sprite = nodeObject.children.find(child => child instanceof SpriteText);
-      if (sprite) {
-        sprite.text = nodeObject.__data.label;
-      }
-    });
-
-    // Save the updated graph data
-    await saveGraphData(currentGraphData);
-  }
-}
 
     // Global variable to store loaded graphs
     let loadedGraphs = [];
@@ -535,7 +546,17 @@ async function updateNodeProperties(nodeId) {
     // Function to load a graph
     async function loadGraph(graphFileName) {
       return new Promise((resolve, reject) => {
-        Graph.jsonUrl(`graphs/${graphFileName}`, resolve, reject);
+        fetch(`graphs/${graphFileName}`)
+          .then(response => response.json())
+          .then(graphData => {
+            Graph.graphData(graphData);
+            initializeForceSimulation(graphData);
+            resolve(graphData);
+          })
+          .catch(error => {
+            console.error('Error loading graph:', error);
+            reject(error);
+          });
       });
     }
 
@@ -651,6 +672,7 @@ async function updateNodeProperties(nodeId) {
       }
     });
 
+
     document.addEventListener('click', event => {
       const nodeInfo = document.getElementById('node-info');
       // Check if the click is outside the node info box by checking if the node-info element or its children are clicked
@@ -659,73 +681,74 @@ async function updateNodeProperties(nodeId) {
       }
     });
 
-    function addNodeInView() {
-      const distanceInFrontOfCamera = 100; // Adjust this value to suit the scale of your graph
 
-      // Get the camera and controls object from the graph
-      const camera = Graph.camera();
-      const controls = Graph.controls();
+function addNodeInView() {
+  const distanceInFrontOfCamera = 100; // Adjust this value to suit the scale of your graph
 
-      // Calculate the direction in which the camera is looking
-      const direction = new THREE.Vector3();
-      camera.getWorldDirection(direction);
-      direction.normalize(); // Normalize the direction vector (convert to vector of length 1)
+  // Get the camera and controls object from the graph
+  const camera = Graph.camera();
+  const controls = Graph.controls();
 
-      // Calculate the new position
-      const newPosition = direction.multiplyScalar(distanceInFrontOfCamera).add(camera.position);
+  // Calculate the direction in which the camera is looking
+  const direction = new THREE.Vector3();
+  camera.getWorldDirection(direction);
+  direction.normalize(); // Normalize the direction vector (convert to vector of length 1)
 
-      // Create a new node at this position
-      const newNode = {
-        id: `Node${Graph.graphData().nodes.length + 1}`,
-        // Position the new node in front of the camera
-        x: newPosition.x,
-        y: newPosition.y,
-        z: newPosition.z,
-        group: Math.floor(Math.random() * 10) // Example group assignment
-      };
+  // Calculate the new position
+  const newPosition = direction.multiplyScalar(distanceInFrontOfCamera).add(camera.position);
 
-      // Add the new node to the graph data
-      const graphData = Graph.graphData();
-      graphData.nodes.push(newNode);
-      Graph.graphData(graphData);
+  // Create a new node at this position
+  const newNode = {
+    id: `Node${Graph.graphData().nodes.length + 1}`,
+    // Position the new node in front of the camera
+    x: newPosition.x,
+    y: newPosition.y,
+    z: newPosition.z,
+    group: Math.floor(Math.random() * 10) // Example group assignment
+  };
 
-      // Optionally, adjust the camera to ensure the new node is in view
-      controls.target.set(newPosition.x, newPosition.y, newPosition.z);
-      // This line would reorient the camera's focus to the new node's position, if desired
-    }
+  // Add the new node to the graph data
+  const graphData = Graph.graphData();
+  graphData.nodes.push(newNode);
+  Graph.graphData(graphData);
 
-    document.addEventListener('click', (event) => {
-      if (!floatingWidget.contains(event.target)) {
-        graphListContainer.style.display = 'none';
-      }
-    });
+  // Optionally, adjust the camera to ensure the new node is in view
+  controls.target.set(newPosition.x, newPosition.y, newPosition.z);
+  // This line would reorient the camera's focus to the new node's position, if desired
+}
 
-    const graphDirBtn = document.getElementById('graph-dir-btn');
-    const graphListContainer = document.getElementById('graph-list-container');
-    const floatingWidget = document.getElementById('floating-widget');
+document.addEventListener('click', (event) => {
+  if (!floatingWidget.contains(event.target)) {
+    graphListContainer.style.display = 'none';
+  }
+});
 
-    graphDirBtn.addEventListener('click', () => {
-      graphListContainer.style.display = 'block';
-      displayGraphList();
-    });
+const graphDirBtn = document.getElementById('graph-dir-btn');
+const graphListContainer = document.getElementById('graph-list-container');
+const floatingWidget = document.getElementById('floating-widget');
 
-    const widgetHeader = document.querySelector('.widget-header');
+graphDirBtn.addEventListener('click', () => {
+  graphListContainer.style.display = 'block';
+  displayGraphList();
+});
 
-    let isDragging = false;
-    let startX, startY, startWidth, startHeight;
+const widgetHeader = document.querySelector('.widget-header');
 
-    widgetHeader.addEventListener('mousedown', startDragging);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', stopDragging);
-    document.addEventListener('mouseleave', stopDragging);
+let isDragging = false;
+let startX, startY, startWidth, startHeight;
 
-    function startDragging(e) {
-      isDragging = true;
-      startX = e.clientX - floatingWidget.offsetLeft;
-      startY = e.clientY - floatingWidget.offsetTop;
-      startWidth = floatingWidget.offsetWidth;
-      startHeight = floatingWidget.offsetHeight;
-    }
+widgetHeader.addEventListener('mousedown', startDragging);
+document.addEventListener('mousemove', drag);
+document.addEventListener('mouseup', stopDragging);
+document.addEventListener('mouseleave', stopDragging);
+
+function startDragging(e) {
+  isDragging = true;
+  startX = e.clientX - floatingWidget.offsetLeft;
+  startY = e.clientY - floatingWidget.offsetTop;
+  startWidth = floatingWidget.offsetWidth;
+  startHeight = floatingWidget.offsetHeight;
+}
 
 function drag(e) {
   if (!isDragging) return;
@@ -789,8 +812,6 @@ function getCurrentDate() {
   const day = String(today.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-
-let selectedNode = null;
 
 document.getElementById('edit-node').addEventListener('click', () => {
   if (selectedNode) {
@@ -865,9 +886,6 @@ function addNodeToGraph() {
   Graph.simulation.alpha(1).restart();
 }
 
-let selectedNode1 = null;
-let selectedNode2 = null;
-
 function createLinkBetweenNodes() {
   if (selectedNode1 && selectedNode2) {
     const currentGraphData = Graph.graphData();
@@ -912,11 +930,6 @@ async function saveGraphData(graphData) {
     console.error('Error saving graph data:', error);
   }
 }
-
-document.getElementById('load-graph-btn').addEventListener('click', () => {
-  const selectedGraph = document.getElementById('graph-select').value;
-  Graph.jsonUrl(`graphs/${selectedGraph}`);
-});
 
 // Removing Graphs
 document.getElementById('remove-graph-btn').addEventListener('click', () => {
@@ -1108,6 +1121,7 @@ function displayMessage(sender, message) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
+
 // Call the displayGraphList function to populate the graph list
 displayGraphList();
 
@@ -1134,10 +1148,9 @@ displayGraphList();
        closeNav();
      }
    });
- </script>
-</body>
+
+  displayGraphList();
+  <script> function openNav() { document.getElementById("mySidebar").style.width = "70px"; document.getElementById("main").style.marginLeft = "70px"; } function closeNav() { document.getElementById("mySidebar").style.width = "0"; document.getElementById("main").style.marginLeft = "0"; } // Close the sidebar when clicking outside of it document.addEventListener("click", function(event) { var sidebar = document.getElementById("mySidebar"); var openBtn = document.querySelector(".openbtn"); if (!sidebar.contains(event.target) && event.target !== openBtn) { closeNav(); } }); </script>
+ </body>
 </html>
 
-</script>
-</body >
-</html>
