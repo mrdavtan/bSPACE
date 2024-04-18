@@ -46,7 +46,6 @@ app.put('/scene.json', async (req, res) => {
   }
 });
 
-
 app.post('/save-graph', async (req, res) => {
   const graphData = req.body;
 
@@ -57,7 +56,7 @@ app.post('/save-graph', async (req, res) => {
   try {
     // Save the graph data to a new file in the public/graphs directory
     await fs.promises.writeFile(`public/graphs/${filename}`, JSON.stringify(graphData, null, 2));
-    console.log('Saving Graph')
+    console.log('Graph saved successfully');
     res.sendStatus(200);
   } catch (err) {
     console.error('Error saving graph:', err);

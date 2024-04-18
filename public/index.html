@@ -385,36 +385,51 @@ body {
     const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
       .backgroundColor('#000003')
       .nodeColor(node => selectedNodes.has(node.id) ? 'yellow' : 'light grey') // Change color based on selection
-      .onNodeClick(node => {
-        // Check if the node is already selected
-        if (selectedNodes.has(node.id)) {
-          selectedNodes.delete(node.id); // If so, deselect it
-        } else {
-          selectedNodes.add(node.id); // Otherwise, select it
-        }
-        Graph.refresh(); // This method might need to be adjusted if ForceGraph3D does not have a refresh method
-        displayNodeInfo(node); // Continue with displaying node info
-      })
+
+
+.onNodeClick(node => {
+  // Check if the node is already selected
+  if (selectedNodes.has(node.id)) {
+    selectedNodes.delete(node.id); // If so, deselect it
+    node.sphereMaterial.color.set('light grey'); // Reset the node color
+  } else {
+    selectedNodes.add(node.id); // Otherwise, select it
+    node.sphereMaterial.color.set('yellow'); // Set the selected node color
+  }
+
+  Graph.refresh(); // Refresh the graph to update the visuals
+  displayNodeInfo(node); // Continue with displaying node info
+})
+
+
       .showNavInfo(false)
       .nodeLabel('id')
       .nodeAutoColorBy('group')
-      .nodeThreeObject(node => {
-        const sphereGeometry = new THREE.SphereGeometry(10);
-        const sphereMaterial = new THREE.MeshBasicMaterial({
-          color: 'light grey',
-          transparent: true,
-          opacity: 0.4
-        });
-        const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        const sprite = new SpriteText(node.label); // Use node.label instead of node.id
-        sprite.textHeight = 8;
-        sprite.color = node.color || 'grey';
-        const container = new THREE.Object3D();
-        container.add(sphereMesh);
-        container.add(sprite);
-        sprite.position.set(0, 0, sphereGeometry.parameters.radius + 20);
-        return container;
-      })
+
+
+.nodeThreeObject(node => {
+  const sphereGeometry = new THREE.SphereGeometry(10);
+  const sphereMaterial = new THREE.MeshBasicMaterial({
+    color: 'light grey',
+    transparent: true,
+    opacity: 0.4
+  });
+  const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  const sprite = new SpriteText(node.label); // Use node.label instead of node.id
+  sprite.textHeight = 8;
+  sprite.color = node.color || 'grey';
+  const container = new THREE.Object3D();
+  container.add(sphereMesh);
+  container.add(sprite);
+  sprite.position.set(0, 0, sphereGeometry.parameters.radius + 20);
+
+  // Store the material reference in the node's data object
+  node.sphereMaterial = sphereMaterial;
+
+  return container;
+})
+
+
       .linkThreeObjectExtend(true)
       .linkThreeObject(link => {
         const sprite = new SpriteText(`${link.source} > ${link.target}`);
