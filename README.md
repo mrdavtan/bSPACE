@@ -49,7 +49,7 @@ const API_KEY = 'YOUR_API_KEY';
 
 ## Usage
 
-![converted_image(1)](https://github.com/mrdavtan/bSPACE/assets/21132073/6a9321c2-ba31-4414-9341-51ee8c2f5cd)
+![Screenshot from 2024-03-30 07-35-03](https://github.com/mrdavtan/bSPACE/assets/21132073/d3adee5a-cb0a-45f8-a136-a34351a602c7)
 
 Open the index.html file in a web browser.
 The 3D graph visualization will be displayed, showing interconnected nodes.
