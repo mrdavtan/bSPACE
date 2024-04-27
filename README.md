@@ -1,8 +1,8 @@
-# Bubble Space
+# bSPACE
 
 ![Screenshot from 2024-04-09 00-53-39](https://github.com/mrdavtan/simplesite/assets/21132073/ed546558-e1b3-4d71-b81d-fca18af62e0c)
 
-Bubble Space is a web-based interactive 3D visualization platform that allows users to explore and interact with a graph of interconnected nodes. The platform incorporates a chat interface powered by OpenAI's GPT-3.5-turbo language model, enabling users to engage in conversational interactions within the application.
+bSPACE is a web-based interactive 3D visualization platform that allows users to explore and interact with a graph of interconnected nodes. The platform incorporates a chat interface powered by OpenAI's GPT-3.5-turbo language model, enabling users to engage in conversational interactions within the application.
 Features
 
 Interactive 3D graph visualization using Three.js and 3d-force-graph library
@@ -14,25 +14,25 @@ Chat interface integrated with OpenAI's GPT-3.5-turbo language model
 Responsive design with a floating widget for chat and search functionality
 
 Prerequisites
-Before running the CitizenSpace application, ensure that you have the following:
+Before running the bSPACE application, ensure that you have the following:
 
 A modern web browser that supports WebGL and Three.js
 An OpenAI API key for the chat functionality
 
 Installation
 
-Clone the CitizenSpace repository:
+Clone the bSPACE repository:
 
 ```bash
 
-git clone https://github.com/your-username/citizenspace.git
+git clone https://github.com/mrdavtan/bSPACE.git
 
 ```
 
 Navigate to the project directory:
 
 ```bash
-cd citizenspace
+cd bSPACE
 
 ```
 3. Open the index.html file in a text editor.
