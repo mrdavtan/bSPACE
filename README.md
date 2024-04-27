@@ -1,6 +1,6 @@
 # bSPACE
 
-![Screenshot from 2024-04-09 00-53-39](https://github.com/mrdavtan/simplesite/assets/21132073/ed546558-e1b3-4d71-b81d-fca18af62e0c)
+![converted_image(1)](https://github.com/mrdavtan/bSPACE/assets/21132073/6a9321c2-ba31-4414-9341-51ee8c2f5cd6)
 
 bSPACE is a web-based interactive 3D visualization platform that allows users to explore and interact with a graph of interconnected nodes. The platform incorporates a chat interface powered by OpenAI's GPT-3.5-turbo language model, enabling users to engage in conversational interactions within the application.
 Features
@@ -48,6 +48,8 @@ const API_KEY = 'YOUR_API_KEY';
 5. Save the changes.
 
 ## Usage
+
+![converted_image(1)](https://github.com/mrdavtan/bSPACE/assets/21132073/6a9321c2-ba31-4414-9341-51ee8c2f5cd)
 
 Open the index.html file in a web browser.
 The 3D graph visualization will be displayed, showing interconnected nodes.
